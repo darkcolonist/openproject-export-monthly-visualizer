@@ -71,10 +71,12 @@
         thead.smart-sticky {
             position: sticky;
             top: 0;
-            transition: opacity 0.2s ease;
+            z-index: 20;
         }
-        thead.smart-sticky.inactive {
-            position: relative;
+        
+        /* Ensure table headers stay above content */
+        thead.smart-sticky th {
+            background-color: #0f172a;
         }
     </style>
 </head>
@@ -91,7 +93,7 @@
                 <p class="text-xs text-slate-400">Project Trends & Developer Breakdown</p>
             </div>
         </div>
-        <button onclick="window.location.reload()" class="text-sm font-medium text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-2">
+        <button onclick="resetToUpload()" class="text-sm font-medium text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-2">
             <i class="ph ph-arrow-counter-clockwise"></i> New File
         </button>
     </header>
@@ -145,13 +147,13 @@
 
                 <!-- Middle Section: Project Breakdown -->
                 <div id="project-section" class="flex flex-col p-0 overflow-hidden shrink-0">
-                    <div class="p-4 bg-slate-950 shrink-0 sticky top-0 z-20 border-b border-slate-800">
+                    <div class="p-4 bg-slate-950 shrink-0 sticky top-0 z-20">
                         <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2 px-4">
                             <i class="ph ph-briefcase text-blue-400"></i> Project Breakdown
                         </h3>
                     </div>
                     <div class="px-8 pb-8">
-                        <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto">
+                        <div class="bg-slate-900 rounded-xl border border-slate-800" style="overflow-x: auto; overflow-y: visible;">
                             <table id="project-table" class="text-sm text-left border-collapse" style="min-width: 100%;">
                                 <thead id="project-thead" class="text-xs text-slate-400 uppercase bg-slate-900 border-b border-slate-700 smart-sticky">
                                     <tr id="project-table-header-row">
@@ -168,13 +170,13 @@
 
                 <!-- Bottom Section: Data Table -->
                 <div id="developer-section" class="flex flex-col p-0 overflow-hidden shrink-0">
-                    <div class="p-4 bg-slate-950 shrink-0 sticky top-0 z-20 border-b border-slate-800">
+                    <div class="p-4 bg-slate-950 shrink-0 sticky top-0 z-20">
                         <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2 px-4">
                             <i class="ph ph-users text-blue-400"></i> Developer Breakdown
                         </h3>
                     </div>
                     <div class="px-8 pb-20">
-                        <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto">
+                        <div class="bg-slate-900 rounded-xl border border-slate-800" style="overflow-x: auto; overflow-y: visible;">
                             <table id="developer-table" class="text-sm text-left border-collapse" style="min-width: 100%;">
                                 <thead id="developer-thead" class="text-xs text-slate-400 uppercase bg-slate-900 border-b border-slate-700 smart-sticky">
                                     <tr id="table-header-row">
@@ -192,8 +194,11 @@
             </div>
 
             <!-- Footer Info -->
-            <div class="absolute bottom-0 left-0 p-2 z-50 pointer-events-none">
-                <span id="file-info" class="text-xs text-slate-500 font-medium"></span>
+            <div class="absolute bottom-0 left-0 p-2 z-50 flex items-center gap-3">
+                <span id="file-info" class="text-xs text-slate-500 font-medium pointer-events-none"></span>
+                <button id="copy-bookmark-btn" onclick="copyBookmarkUrl()" class="text-xs text-slate-500 hover:text-blue-400 flex items-center gap-1 pointer-events-auto transition-colors" title="Copy URL from address bar (already updated with filename)">
+                    <i class="ph ph-link"></i> Copy URL
+                </button>
             </div>
 
             <!-- Floating Navigation -->
@@ -229,6 +234,88 @@
         Chart.defaults.color = '#94a3b8';
         Chart.defaults.borderColor = '#334155';
 
+        // Check for URL parameter on page load
+        function checkUrlParameter() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const uploadParam = urlParams.get('upload');
+            
+            if (uploadParam) {
+                // Store the requested file path
+                localStorage.setItem('requestedFilePath', uploadParam);
+                
+                // Extract filename from path
+                const filename = uploadParam.split(/[\\/]/).pop();
+                
+                // Show helpful message in drop zone
+                const dropZoneText = dropZone.querySelector('p:last-child');
+                dropZoneText.innerHTML = `<span class="text-blue-400 font-semibold">Looking for: ${filename}</span><br><span class="text-xs">Click to select this file</span>`;
+                
+                // Try to load from cache first
+                loadCachedFile(filename);
+            }
+        }
+
+        // Save file to IndexedDB for future reload
+        function cacheFile(file, data) {
+            try {
+                const dbRequest = indexedDB.open('FileCache', 1);
+                
+                dbRequest.onupgradeneeded = function(event) {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('files')) {
+                        db.createObjectStore('files', { keyPath: 'name' });
+                    }
+                };
+                
+                dbRequest.onsuccess = function(event) {
+                    const db = event.target.result;
+                    const transaction = db.transaction(['files'], 'readwrite');
+                    const store = transaction.objectStore('files');
+                    
+                    store.put({
+                        name: file.name,
+                        data: data,
+                        timestamp: Date.now()
+                    });
+                };
+            } catch (e) {
+                console.log('Could not cache file:', e);
+            }
+        }
+
+        // Load file from IndexedDB cache
+        function loadCachedFile(filename) {
+            try {
+                const dbRequest = indexedDB.open('FileCache', 1);
+                
+                dbRequest.onsuccess = function(event) {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('files')) return;
+                    
+                    const transaction = db.transaction(['files'], 'readonly');
+                    const store = transaction.objectStore('files');
+                    const getRequest = store.get(filename);
+                    
+                    getRequest.onsuccess = function() {
+                        if (getRequest.result) {
+                            const cachedFile = getRequest.result;
+                            const age = Date.now() - cachedFile.timestamp;
+                            
+                            // Auto-load if cached within last hour
+                            if (age < 3600000) {
+                                console.log('Loading cached file:', filename);
+                                const blob = new Blob([cachedFile.data]);
+                                const file = new File([blob], filename);
+                                handleFile(file);
+                            }
+                        }
+                    };
+                };
+            } catch (e) {
+                console.log('Could not load cached file:', e);
+            }
+        }
+
         // --- Event Listeners ---
         dropZone.addEventListener('click', () => fileInput.click());
 
@@ -251,11 +338,18 @@
             if (e.target.files.length) handleFile(e.target.files[0]);
         });
 
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            checkUrlParameter();
+        });
+
         // --- Logic ---
 
         function handleFile(file) {
             const reader = new FileReader();
             reader.onload = (e) => {
+                // Cache the file data for quick reload
+                cacheFile(file, e.target.result);
                 try {
                     const fileBuffer = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(fileBuffer, { type: 'array' });
@@ -389,6 +483,9 @@
                     
                     // Initialize sticky header observers
                     setTimeout(() => initializeStickyHeaders(), 100);
+                    
+                    // Generate bookmarkable URL
+                    generateBookmarkUrl(file.name);
 
                 } catch (err) {
                     console.error(err);
@@ -635,48 +732,113 @@
         }
 
         function initializeStickyHeaders() {
-            const scrollContainer = document.getElementById('scroll-content');
-            const projectSection = document.getElementById('project-section');
-            const developerSection = document.getElementById('developer-section');
-            const projectThead = document.getElementById('project-thead');
-            const developerThead = document.getElementById('developer-thead');
+            // Headers now use native CSS sticky behavior
+            // They will automatically stick within their container and unstick when scrolled past
+            // No Intersection Observer needed - the browser handles this natively
+        }
 
-            if (!scrollContainer || !projectSection || !developerSection) {
+        function generateBookmarkUrl(filename) {
+            // Store the current file info
+            localStorage.setItem('lastLoadedFile', filename);
+            localStorage.setItem('lastLoadedTime', Date.now());
+            
+            // Update the URL in the address bar
+            const newUrl = `${window.location.pathname}?upload=${encodeURIComponent(filename)}`;
+            window.history.replaceState({ file: filename }, '', newUrl);
+            
+            // Show a subtle notification
+            console.log(`URL updated: ${newUrl}`);
+        }
+
+        function copyBookmarkUrl() {
+            const filename = localStorage.getItem('lastLoadedFile');
+            if (!filename) {
+                alert('No file loaded yet');
                 return;
             }
+            
+            const baseUrl = window.location.origin + window.location.pathname;
+            const bookmarkUrl = `${baseUrl}?upload="${encodeURIComponent(filename)}"`;
+            
+            navigator.clipboard.writeText(bookmarkUrl).then(() => {
+                const btn = document.getElementById('copy-bookmark-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="ph ph-check"></i> Copied!';
+                btn.classList.add('text-green-400');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('text-green-400');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                prompt('Copy this URL:', bookmarkUrl);
+            });
+        }
 
-            // Observer options
-            const observerOptions = {
-                root: scrollContainer,
-                rootMargin: '0px 0px -80% 0px', // Header becomes inactive when 80% of table is scrolled past
-                threshold: [0, 0.2, 0.8, 1]
-            };
+        function getReloadButton() {
+            const lastFile = localStorage.getItem('lastLoadedFile');
+            const lastTime = localStorage.getItem('lastLoadedTime');
+            
+            if (lastFile && lastTime) {
+                const age = Date.now() - parseInt(lastTime);
+                // Show reload option if file was loaded within last 24 hours
+                if (age < 86400000) {
+                    const hint = document.createElement('div');
+                    hint.className = 'mt-4 text-center';
+                    hint.innerHTML = `
+                        <button onclick="reloadLastFile()" class="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-2 mx-auto">
+                            <i class="ph ph-clock-counter-clockwise"></i>
+                            <span>Reload: ${lastFile}</span>
+                        </button>
+                    `;
+                    dropZone.parentElement.appendChild(hint);
+                }
+            }
+        }
 
-            // Create observer for project table
-            const projectObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting && entry.intersectionRatio > 0.2) {
-                        projectThead.classList.remove('inactive');
-                    } else {
-                        projectThead.classList.add('inactive');
-                    }
-                });
-            }, observerOptions);
+        function reloadLastFile() {
+            const lastFile = localStorage.getItem('lastLoadedFile');
+            if (lastFile) {
+                loadCachedFile(lastFile);
+            }
+        }
 
-            // Create observer for developer table
-            const developerObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting && entry.intersectionRatio > 0.2) {
-                        developerThead.classList.remove('inactive');
-                    } else {
-                        developerThead.classList.add('inactive');
-                    }
-                });
-            }, observerOptions);
+        // Show reload button if available
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(getReloadButton, 100);
+        });
 
-            // Start observing
-            projectObserver.observe(projectSection);
-            developerObserver.observe(developerSection);
+        function resetToUpload() {
+            // Clear the URL parameter
+            window.history.replaceState({}, '', window.location.pathname);
+            
+            // Clear any stored data
+            localStorage.removeItem('requestedFilePath');
+            
+            // Hide dashboard and show upload container
+            dashboardContainer.classList.add('hidden');
+            dashboardContainer.classList.add('opacity-0');
+            uploadContainer.style.display = 'block';
+            
+            // Reset drop zone text
+            const dropZoneText = dropZone.querySelector('p:last-child');
+            dropZoneText.innerHTML = 'Supports Excel (.xls, .xlsx) & CSV';
+            
+            // Destroy chart if exists
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+            
+            // Clear tables
+            projectTableHeaderRow.innerHTML = '';
+            projectTableBody.innerHTML = '';
+            tableHeaderRow.innerHTML = '';
+            tableBody.innerHTML = '';
+            
+            // Reset file input
+            fileInput.value = '';
         }
     </script>
 </body>
