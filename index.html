@@ -124,7 +124,7 @@
                 </div>
                 <div>
                     <table class="w-full text-sm text-left border-collapse">
-                        <thead id="project-thead" class="text-xs text-slate-400 uppercase bg-slate-900 border-b border-slate-700 sticky z-20 transition-all">
+                        <thead id="project-thead" class="text-xs text-slate-400 uppercase bg-slate-900 border-b border-slate-700 sticky z-20 transition-all" style="top: var(--header-offset, 0px);">
                             <tr id="project-table-header-row">
                                 <!-- Headers injected via JS -->
                             </tr>
@@ -145,7 +145,7 @@
                 </div>
                 <div>
                     <table class="w-full text-sm text-left border-collapse">
-                        <thead id="developer-thead" class="text-xs text-slate-400 uppercase bg-slate-900 border-b border-slate-700 sticky z-20 transition-all">
+                        <thead id="developer-thead" class="text-xs text-slate-400 uppercase bg-slate-900 border-b border-slate-700 sticky z-20 transition-all" style="top: var(--header-offset, 0px);">
                             <tr id="table-header-row">
                                 <!-- Headers injected via JS -->
                             </tr>
@@ -593,13 +593,9 @@
 
         function updateStickyHeaders() {
             const chartSection = document.getElementById('chart-section');
-            const projectThead = document.getElementById('project-thead');
-            const developerThead = document.getElementById('developer-thead');
-
-            if (chartSection && projectThead && developerThead) {
-                const height = chartSection.offsetHeight;
-                projectThead.style.top = `${height}px`;
-                developerThead.style.top = `${height}px`;
+            if (chartSection) {
+                const height = chartSection.getBoundingClientRect().height;
+                document.documentElement.style.setProperty('--header-offset', `${height}px`);
             }
         }
 
@@ -611,6 +607,12 @@
         const chartContent = document.getElementById('chart-content');
         if (chartContent) {
             chartContent.addEventListener('transitionend', updateStickyHeaders);
+        }
+
+        // Use ResizeObserver for robustness
+        const chartSection = document.getElementById('chart-section');
+        if (chartSection) {
+            new ResizeObserver(updateStickyHeaders).observe(chartSection);
         }
     </script>
 </body>
