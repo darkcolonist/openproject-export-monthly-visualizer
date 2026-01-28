@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cost Report Visualizer</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <!-- SheetJS (XLS/XLSX/CSV Parser) -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
@@ -53,10 +53,10 @@
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
 </head>
-<body class="h-screen flex flex-col font-sans">
+<body class="min-h-screen flex flex-col font-sans bg-slate-950">
 
     <!-- Header -->
-    <header class="bg-slate-900 border-b border-slate-800 px-8 py-4 flex justify-between items-center shadow-sm shrink-0 z-10">
+    <header class="bg-slate-900 border-b border-slate-800 px-8 py-4 flex justify-between items-center shadow-sm shrink-0 z-40 relative">
         <div class="flex items-center gap-3">
             <div class="bg-slate-800 text-blue-400 p-2 rounded-lg border border-slate-700">
                 <i class="ph ph-calendar-check text-xl"></i>
@@ -72,10 +72,10 @@
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col items-center justify-center p-6 overflow-hidden relative">
-        
+    <main class="flex-1 flex flex-col items-center p-6 relative">
+
         <!-- 1. Upload View (Centered) -->
-        <div id="upload-container" class="w-full max-w-xl transition-all duration-500 ease-in-out transform">
+        <div id="upload-container" class="w-full max-w-xl transition-all duration-500 ease-in-out transform mt-20">
             <div class="text-center mb-8">
                 <h2 class="text-2xl font-bold text-slate-100 mb-2">Upload Cost Report</h2>
                 <p class="text-slate-400">Drag and drop your .xls or .csv file to see monthly trends.</p>
@@ -92,34 +92,39 @@
         </div>
 
         <!-- 2. Dashboard View (Hidden initially) -->
-        <div id="dashboard-container" class="w-full max-w-7xl h-full flex flex-col hidden opacity-0 transition-opacity duration-700 gap-4">
-            
+        <div id="dashboard-container" class="w-full max-w-7xl flex flex-col hidden opacity-0 transition-opacity duration-700 gap-4 pb-20">
+
             <!-- Top Section: Chart -->
-            <div class="bg-slate-900 rounded-xl shadow-lg border border-slate-800 flex-[3] flex flex-col p-4 min-h-0 relative">
+            <div id="chart-section" class="bg-slate-900 rounded-xl shadow-lg border border-slate-800 flex flex-col p-4 relative sticky top-0 z-30 transition-all">
                 <div class="flex justify-between items-start mb-2 shrink-0">
                     <div>
                         <h3 class="text-lg font-bold text-slate-100">Monthly Hours Trend</h3>
                         <p class="text-xs text-slate-500">Stacked by <span class="font-bold text-blue-400">Project</span></p>
                     </div>
-                    <button onclick="downloadChart()" class="text-xs font-medium text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 hover:bg-slate-700 transition-colors">
-                        <i class="ph ph-download-simple"></i> Save Image
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleChart()" id="toggle-chart-btn" class="text-xs font-medium text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 hover:bg-slate-700 transition-colors">
+                            <i class="ph ph-caret-up"></i> Collapse
+                        </button>
+                        <button onclick="downloadChart()" class="text-xs font-medium text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 hover:bg-slate-700 transition-colors">
+                            <i class="ph ph-download-simple"></i> Save Image
+                        </button>
+                    </div>
                 </div>
-                <div class="relative flex-1 w-full min-h-0">
+                <div id="chart-content" class="relative w-full h-80 transition-all overflow-hidden">
                     <canvas id="myChart"></canvas>
                 </div>
             </div>
 
             <!-- Middle Section: Project Breakdown -->
-            <div class="bg-slate-900 rounded-xl shadow-lg border border-slate-800 flex-[2] flex flex-col p-0 min-h-0 overflow-hidden">
+            <div id="project-section" class="bg-slate-900 rounded-xl shadow-lg border border-slate-800 flex flex-col p-0 overflow-hidden shrink-0">
                 <div class="p-4 border-b border-slate-800 bg-slate-900 shrink-0">
                     <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
                         <i class="ph ph-briefcase text-blue-400"></i> Project Breakdown
                     </h3>
                 </div>
-                <div class="overflow-auto flex-1 custom-scrollbar">
+                <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left border-collapse">
-                        <thead class="text-xs text-slate-400 uppercase bg-slate-800 sticky top-0 z-10 shadow-sm border-b border-slate-700">
+                        <thead class="text-xs text-slate-400 uppercase bg-slate-800 border-b border-slate-700">
                             <tr id="project-table-header-row">
                                 <!-- Headers injected via JS -->
                             </tr>
@@ -132,15 +137,15 @@
             </div>
 
             <!-- Bottom Section: Data Table -->
-            <div class="bg-slate-900 rounded-xl shadow-lg border border-slate-800 flex-[2] flex flex-col p-0 min-h-0 overflow-hidden">
+            <div id="developer-section" class="bg-slate-900 rounded-xl shadow-lg border border-slate-800 flex flex-col p-0 overflow-hidden shrink-0">
                 <div class="p-4 border-b border-slate-800 bg-slate-900 shrink-0">
                     <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
                         <i class="ph ph-users text-blue-400"></i> Developer Breakdown
                     </h3>
                 </div>
-                <div class="overflow-auto flex-1 custom-scrollbar">
+                <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left border-collapse">
-                        <thead class="text-xs text-slate-400 uppercase bg-slate-800 sticky top-0 z-10 shadow-sm border-b border-slate-700">
+                        <thead class="text-xs text-slate-400 uppercase bg-slate-800 border-b border-slate-700">
                             <tr id="table-header-row">
                                 <!-- Headers injected via JS -->
                             </tr>
@@ -155,6 +160,19 @@
             <!-- Footer Info -->
             <div class="flex justify-between items-center px-2 shrink-0 pb-2">
                 <span id="file-info" class="text-xs text-slate-500 font-medium"></span>
+            </div>
+
+            <!-- Floating Navigation -->
+            <div class="fixed bottom-6 right-6 flex flex-col gap-2 z-50">
+                <button onclick="scrollToSection('chart-section')" class="w-10 h-10 bg-slate-800 text-blue-400 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center" title="Top">
+                    <i class="ph ph-arrow-up"></i>
+                </button>
+                <button onclick="scrollToSection('project-section')" class="w-10 h-10 bg-slate-800 text-blue-400 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center" title="Projects">
+                    <i class="ph ph-briefcase"></i>
+                </button>
+                <button onclick="scrollToSection('developer-section')" class="w-10 h-10 bg-slate-800 text-blue-400 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center" title="Developers">
+                    <i class="ph ph-users"></i>
+                </button>
             </div>
         </div>
 
@@ -179,16 +197,16 @@
 
         // --- Event Listeners ---
         dropZone.addEventListener('click', () => fileInput.click());
-        
+
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             dropZone.classList.add('drag-active');
         });
-        
+
         dropZone.addEventListener('dragleave', () => {
             dropZone.classList.remove('drag-active');
         });
-        
+
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('drag-active');
@@ -208,7 +226,7 @@
                     const fileBuffer = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(fileBuffer, { type: 'array' });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    
+
                     // 1. Detect Header Row
                     const rawRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
                     let headerIndex = 0;
@@ -225,8 +243,8 @@
                     if (!jsonData.length) { alert("No valid data found."); return; }
 
                     // 3. Process Data
-                    const monthMap = {}; 
-                    const userMap = {}; 
+                    const monthMap = {};
+                    const userMap = {};
                     const allUsersSet = new Set();
                     const projectMap = {};
                     const allProjectsSet = new Set();
@@ -248,7 +266,7 @@
                                 // Parse Date
                                 let monthKey = "";
                                 let monthLabel = "";
-                                
+
                                 if (typeof dateVal === 'number') {
                                     const dateObj = XLSX.SSF.parse_date_code(dateVal);
                                     const mm = String(dateObj.m).padStart(2, '0');
@@ -291,7 +309,7 @@
 
                     // 5. Prepare Chart Datasets
                     const projectsList = Array.from(allProjectsSet).sort();
-                    
+
                     // Filter out projects that have 0 total hours (Cleaner Legend)
                     const activeProjects = projectsList.filter(proj => {
                         const total = Object.values(projectMap[proj]).reduce((a,b) => a+b, 0);
@@ -302,7 +320,7 @@
                     activeProjects.sort((a, b) => {
                         const totalA = Object.values(projectMap[a]).reduce((sum, val) => sum + val, 0);
                         const totalB = Object.values(projectMap[b]).reduce((sum, val) => sum + val, 0);
-                        return totalB - totalA; 
+                        return totalB - totalA;
                     });
 
                     const chartDatasets = activeProjects.map((project, index) => {
@@ -322,7 +340,7 @@
                     usersList.sort((a, b) => {
                         const totalA = Object.values(userMap[a]).reduce((sum, val) => sum + val, 0);
                         const totalB = Object.values(userMap[b]).reduce((sum, val) => sum + val, 0);
-                        return totalB - totalA; 
+                        return totalB - totalA;
                     });
 
                     // 7. Render
@@ -368,7 +386,7 @@
 
         function renderStackedChart(labels, datasets) {
             const ctx = document.getElementById('myChart').getContext('2d');
-            
+
             if (chartInstance) chartInstance.destroy();
 
             chartInstance = new Chart(ctx, {
@@ -384,7 +402,7 @@
                         x: {
                             stacked: true,
                             grid: { display: false },
-                            ticks: { 
+                            ticks: {
                                 font: { family: "'Inter', sans-serif", size: 11 },
                                 color: '#94a3b8'
                             }
@@ -482,11 +500,11 @@
 
             // 2. Build Rows
             let bodyHTML = '';
-            
+
             usersList.forEach((user, index) => {
                 let rowTotal = 0;
                 let rowCells = '';
-                
+
                 monthKeys.forEach(mKey => {
                     const val = userMap[user][mKey] || 0;
                     rowTotal += val;
@@ -514,16 +532,52 @@
             tempCanvas.width = canvas.width;
             tempCanvas.height = canvas.height;
             const tCtx = tempCanvas.getContext('2d');
-            
+
             // Dark background for Export
             tCtx.fillStyle = '#0f172a'; // Slate 900
             tCtx.fillRect(0,0, tempCanvas.width, tempCanvas.height);
             tCtx.drawImage(canvas, 0, 0);
-            
+
             const link = document.createElement('a');
             link.download = 'Monthly_Project_Report.png';
             link.href = tempCanvas.toDataURL('image/png', 1.0);
             link.click();
+        }
+
+        function toggleChart() {
+            const content = document.getElementById('chart-content');
+            const btn = document.getElementById('toggle-chart-btn');
+
+            if (content.classList.contains('h-0')) {
+                // Expand
+                content.classList.remove('h-0');
+                content.classList.add('h-80');
+                btn.innerHTML = '<i class="ph ph-caret-up"></i> Collapse';
+            } else {
+                // Collapse
+                content.classList.remove('h-80');
+                content.classList.add('h-0');
+                btn.innerHTML = '<i class="ph ph-caret-down"></i> Expand';
+            }
+        }
+
+        function scrollToSection(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                if(id === 'chart-section') {
+                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                     return;
+                }
+                const chartSection = document.getElementById('chart-section');
+                const offset = chartSection.offsetHeight + 16;
+                const elementPosition = el.getBoundingClientRect().top + window.pageYOffset;
+                const offsetPosition = elementPosition - offset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: "smooth"
+                });
+            }
         }
     </script>
 </body>
