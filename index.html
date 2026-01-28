@@ -92,7 +92,7 @@
         </div>
 
         <!-- 2. Dashboard View (Hidden initially) -->
-        <div id="dashboard-container" class="w-full max-w-7xl flex flex-col hidden opacity-0 transition-opacity duration-700 gap-4 pb-20">
+        <div id="dashboard-container" class="w-full px-8 flex flex-col hidden opacity-0 transition-opacity duration-700 gap-4 pb-20">
 
             <!-- Top Section: Chart -->
             <div id="chart-section" class="bg-slate-900 rounded-xl shadow-lg border border-slate-800 flex flex-col p-4 relative sticky top-0 z-30 transition-all">
@@ -122,9 +122,9 @@
                         <i class="ph ph-briefcase text-blue-400"></i> Project Breakdown
                     </h3>
                 </div>
-                <div class="overflow-x-auto">
+                <div>
                     <table class="w-full text-sm text-left border-collapse">
-                        <thead class="text-xs text-slate-400 uppercase bg-slate-800 border-b border-slate-700">
+                        <thead id="project-thead" class="text-xs text-slate-400 uppercase bg-slate-900 border-b border-slate-700 sticky z-20 transition-all">
                             <tr id="project-table-header-row">
                                 <!-- Headers injected via JS -->
                             </tr>
@@ -143,9 +143,9 @@
                         <i class="ph ph-users text-blue-400"></i> Developer Breakdown
                     </h3>
                 </div>
-                <div class="overflow-x-auto">
+                <div>
                     <table class="w-full text-sm text-left border-collapse">
-                        <thead class="text-xs text-slate-400 uppercase bg-slate-800 border-b border-slate-700">
+                        <thead id="developer-thead" class="text-xs text-slate-400 uppercase bg-slate-900 border-b border-slate-700 sticky z-20 transition-all">
                             <tr id="table-header-row">
                                 <!-- Headers injected via JS -->
                             </tr>
@@ -361,6 +361,17 @@
             reader.readAsArrayBuffer(file);
         }
 
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            if (!text) return text;
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         // Generate distinctive colors (Bright for Dark Mode)
         function getColor(index) {
             const colors = [
@@ -477,7 +488,7 @@
                     <tr class="hover:bg-slate-800 transition-colors">
                         <td class="px-6 py-3 font-medium text-slate-300 border-b border-slate-800 flex items-center gap-2">
                             <span class="w-3 h-3 rounded-full" style="background-color: ${color};"></span>
-                            ${project}
+                            ${escapeHtml(project)}
                         </td>
                         ${rowCells}
                         <td class="px-6 py-3 font-bold text-blue-400 text-right border-b border-slate-800 bg-slate-800/50">${rowTotal.toFixed(2)}</td>
@@ -515,7 +526,7 @@
                 bodyHTML += `
                     <tr class="hover:bg-slate-800 transition-colors">
                         <td class="px-6 py-3 font-medium text-slate-300 border-b border-slate-800 flex items-center gap-2">
-                            ${user}
+                            ${escapeHtml(user)}
                         </td>
                         ${rowCells}
                         <td class="px-6 py-3 font-bold text-blue-400 text-right border-b border-slate-800 bg-slate-800/50">${rowTotal.toFixed(2)}</td>
@@ -578,6 +589,28 @@
                     behavior: "smooth"
                 });
             }
+        }
+
+        function updateStickyHeaders() {
+            const chartSection = document.getElementById('chart-section');
+            const projectThead = document.getElementById('project-thead');
+            const developerThead = document.getElementById('developer-thead');
+
+            if (chartSection && projectThead && developerThead) {
+                const height = chartSection.offsetHeight;
+                projectThead.style.top = `${height}px`;
+                developerThead.style.top = `${height}px`;
+            }
+        }
+
+        // Update headers on load, resize, and toggle
+        window.addEventListener('load', updateStickyHeaders);
+        window.addEventListener('resize', updateStickyHeaders);
+
+        // Listen for transition end to update sticky headers accurately
+        const chartContent = document.getElementById('chart-content');
+        if (chartContent) {
+            chartContent.addEventListener('transitionend', updateStickyHeaders);
         }
     </script>
 </body>
