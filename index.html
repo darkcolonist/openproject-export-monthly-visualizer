@@ -51,6 +51,31 @@
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
+        /* Sticky column styles */
+        .sticky-col {
+            position: sticky;
+            left: 0;
+            z-index: 15;
+        }
+        .sticky-col-header {
+            position: sticky;
+            left: 0;
+            z-index: 25;
+        }
+        .sticky-col-shadow {
+            box-shadow: 2px 0 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Smart sticky header behavior */
+        thead.smart-sticky {
+            position: sticky;
+            top: 0;
+            transition: opacity 0.2s ease;
+        }
+        thead.smart-sticky.inactive {
+            position: relative;
+        }
     </style>
 </head>
 <body class="h-screen flex flex-col font-sans bg-slate-950 overflow-hidden">
@@ -126,9 +151,9 @@
                         </h3>
                     </div>
                     <div class="px-8 pb-8">
-                        <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
-                            <table class="w-full text-sm text-left border-collapse">
-                                <thead id="project-thead" class="text-xs text-slate-400 uppercase bg-slate-900 border-b border-slate-700 sticky top-0 z-10">
+                        <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto">
+                            <table id="project-table" class="text-sm text-left border-collapse" style="min-width: 100%;">
+                                <thead id="project-thead" class="text-xs text-slate-400 uppercase bg-slate-900 border-b border-slate-700 smart-sticky">
                                     <tr id="project-table-header-row">
                                         <!-- Headers injected via JS -->
                                     </tr>
@@ -149,9 +174,9 @@
                         </h3>
                     </div>
                     <div class="px-8 pb-20">
-                        <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
-                            <table class="w-full text-sm text-left border-collapse">
-                                <thead id="developer-thead" class="text-xs text-slate-400 uppercase bg-slate-900 border-b border-slate-700 sticky top-0 z-10">
+                        <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto">
+                            <table id="developer-table" class="text-sm text-left border-collapse" style="min-width: 100%;">
+                                <thead id="developer-thead" class="text-xs text-slate-400 uppercase bg-slate-900 border-b border-slate-700 smart-sticky">
                                     <tr id="table-header-row">
                                         <!-- Headers injected via JS -->
                                     </tr>
@@ -361,6 +386,9 @@
                     renderStackedChart(monthLabels, chartDatasets);
                     renderProjectTable(sortedMonthKeys, monthLabels, activeProjects, projectMap);
                     renderTable(sortedMonthKeys, monthLabels, usersList, userMap);
+                    
+                    // Initialize sticky header observers
+                    setTimeout(() => initializeStickyHeaders(), 100);
 
                 } catch (err) {
                     console.error(err);
@@ -470,12 +498,12 @@
 
         function renderProjectTable(monthKeys, monthLabels, projectsList, projectMap) {
             // 1. Build Header
-            let headerHTML = `<th class="px-6 py-3 font-medium text-slate-400 bg-slate-900 border-b border-slate-700 text-left">Project</th>`;
+            let headerHTML = `<th class="sticky-col-header sticky-col-shadow px-6 py-3 font-medium text-slate-400 bg-slate-900 border-b border-slate-700 text-left">Project</th>`;
             monthLabels.forEach(label => {
                 headerHTML += `<th class="px-6 py-3 font-medium text-slate-400 bg-slate-900 border-b border-slate-700 text-right whitespace-nowrap">${label}</th>`;
             });
             // Add Total Column
-            headerHTML += `<th class="px-6 py-3 font-bold text-slate-200 bg-slate-900 border-b border-slate-700 text-right">Grand Total</th>`;
+            headerHTML += `<th class="px-6 py-3 font-bold text-slate-200 bg-slate-900 border-b border-slate-700 text-right whitespace-nowrap">Grand Total</th>`;
             projectTableHeaderRow.innerHTML = headerHTML;
 
             // 2. Build Rows
@@ -495,9 +523,11 @@
 
                 bodyHTML += `
                     <tr class="hover:bg-slate-800 transition-colors">
-                        <td class="px-6 py-3 font-medium text-slate-300 border-b border-slate-800 flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full" style="background-color: ${color};"></span>
-                            ${escapeHtml(project)}
+                        <td class="sticky-col sticky-col-shadow px-6 py-3 font-medium text-slate-300 border-b border-slate-800 bg-slate-900">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${color};"></span>
+                                <span>${escapeHtml(project)}</span>
+                            </div>
                         </td>
                         ${rowCells}
                         <td class="px-6 py-3 font-bold text-blue-400 text-right border-b border-slate-800 bg-slate-800/50">${rowTotal.toFixed(2)}</td>
@@ -510,12 +540,12 @@
 
         function renderTable(monthKeys, monthLabels, usersList, userMap) {
             // 1. Build Header
-            let headerHTML = `<th class="px-6 py-3 font-medium text-slate-400 bg-slate-900 border-b border-slate-700 text-left">Developer</th>`;
+            let headerHTML = `<th class="sticky-col-header sticky-col-shadow px-6 py-3 font-medium text-slate-400 bg-slate-900 border-b border-slate-700 text-left">Developer</th>`;
             monthLabels.forEach(label => {
                 headerHTML += `<th class="px-6 py-3 font-medium text-slate-400 bg-slate-900 border-b border-slate-700 text-right whitespace-nowrap">${label}</th>`;
             });
             // Add Total Column
-            headerHTML += `<th class="px-6 py-3 font-bold text-slate-200 bg-slate-900 border-b border-slate-700 text-right">Grand Total</th>`;
+            headerHTML += `<th class="px-6 py-3 font-bold text-slate-200 bg-slate-900 border-b border-slate-700 text-right whitespace-nowrap">Grand Total</th>`;
             tableHeaderRow.innerHTML = headerHTML;
 
             // 2. Build Rows
@@ -534,7 +564,7 @@
 
                 bodyHTML += `
                     <tr class="hover:bg-slate-800 transition-colors">
-                        <td class="px-6 py-3 font-medium text-slate-300 border-b border-slate-800 flex items-center gap-2">
+                        <td class="sticky-col sticky-col-shadow px-6 py-3 font-medium text-slate-300 border-b border-slate-800 bg-slate-900">
                             ${escapeHtml(user)}
                         </td>
                         ${rowCells}
@@ -602,6 +632,51 @@
                     behavior: "smooth"
                 });
             }
+        }
+
+        function initializeStickyHeaders() {
+            const scrollContainer = document.getElementById('scroll-content');
+            const projectSection = document.getElementById('project-section');
+            const developerSection = document.getElementById('developer-section');
+            const projectThead = document.getElementById('project-thead');
+            const developerThead = document.getElementById('developer-thead');
+
+            if (!scrollContainer || !projectSection || !developerSection) {
+                return;
+            }
+
+            // Observer options
+            const observerOptions = {
+                root: scrollContainer,
+                rootMargin: '0px 0px -80% 0px', // Header becomes inactive when 80% of table is scrolled past
+                threshold: [0, 0.2, 0.8, 1]
+            };
+
+            // Create observer for project table
+            const projectObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && entry.intersectionRatio > 0.2) {
+                        projectThead.classList.remove('inactive');
+                    } else {
+                        projectThead.classList.add('inactive');
+                    }
+                });
+            }, observerOptions);
+
+            // Create observer for developer table
+            const developerObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && entry.intersectionRatio > 0.2) {
+                        developerThead.classList.remove('inactive');
+                    } else {
+                        developerThead.classList.add('inactive');
+                    }
+                });
+            }, observerOptions);
+
+            // Start observing
+            projectObserver.observe(projectSection);
+            developerObserver.observe(developerSection);
         }
     </script>
 </body>
