@@ -110,6 +110,27 @@
                 </div>
             </div>
 
+            <!-- Middle Section: Project Breakdown -->
+            <div class="bg-slate-900 rounded-xl shadow-lg border border-slate-800 flex-[2] flex flex-col p-0 min-h-0 overflow-hidden">
+                <div class="p-4 border-b border-slate-800 bg-slate-900 shrink-0">
+                    <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+                        <i class="ph ph-briefcase text-blue-400"></i> Project Breakdown
+                    </h3>
+                </div>
+                <div class="overflow-auto flex-1 custom-scrollbar">
+                    <table class="w-full text-sm text-left border-collapse">
+                        <thead class="text-xs text-slate-400 uppercase bg-slate-800 sticky top-0 z-10 shadow-sm border-b border-slate-700">
+                            <tr id="project-table-header-row">
+                                <!-- Headers injected via JS -->
+                            </tr>
+                        </thead>
+                        <tbody id="project-table-body" class="divide-y divide-slate-800">
+                            <!-- Rows injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- Bottom Section: Data Table -->
             <div class="bg-slate-900 rounded-xl shadow-lg border border-slate-800 flex-[2] flex flex-col p-0 min-h-0 overflow-hidden">
                 <div class="p-4 border-b border-slate-800 bg-slate-900 shrink-0">
@@ -149,6 +170,8 @@
         const fileInfo = document.getElementById('file-info');
         const tableHeaderRow = document.getElementById('table-header-row');
         const tableBody = document.getElementById('table-body');
+        const projectTableHeaderRow = document.getElementById('project-table-header-row');
+        const projectTableBody = document.getElementById('project-table-body');
 
         // Set Chart.js Defaults for Dark Mode
         Chart.defaults.color = '#94a3b8';
@@ -309,6 +332,7 @@
                     fileInfo.textContent = `Source: ${file.name} | ${sortedMonthKeys.length} Months Found`;
 
                     renderStackedChart(monthLabels, chartDatasets);
+                    renderProjectTable(sortedMonthKeys, monthLabels, activeProjects, projectMap);
                     renderTable(sortedMonthKeys, monthLabels, usersList, userMap);
 
                 } catch (err) {
@@ -404,6 +428,46 @@
                     layout: { padding: 0 }
                 }
             });
+        }
+
+        function renderProjectTable(monthKeys, monthLabels, projectsList, projectMap) {
+            // 1. Build Header
+            let headerHTML = `<th class="px-6 py-3 font-medium text-slate-400 bg-slate-800 border-b border-slate-700 text-left">Project</th>`;
+            monthLabels.forEach(label => {
+                headerHTML += `<th class="px-6 py-3 font-medium text-slate-400 bg-slate-800 border-b border-slate-700 text-right whitespace-nowrap">${label}</th>`;
+            });
+            // Add Total Column
+            headerHTML += `<th class="px-6 py-3 font-bold text-slate-200 bg-slate-800 border-b border-slate-700 text-right">Grand Total</th>`;
+            projectTableHeaderRow.innerHTML = headerHTML;
+
+            // 2. Build Rows
+            let bodyHTML = '';
+
+            projectsList.forEach((project, index) => {
+                let rowTotal = 0;
+                let rowCells = '';
+                const color = getColor(index);
+
+                monthKeys.forEach(mKey => {
+                    const val = projectMap[project][mKey] || 0;
+                    rowTotal += val;
+                    const displayVal = val > 0 ? val.toFixed(2) : '<span class="text-slate-700">-</span>';
+                    rowCells += `<td class="px-6 py-3 text-right text-slate-400 border-b border-slate-800">${displayVal}</td>`;
+                });
+
+                bodyHTML += `
+                    <tr class="hover:bg-slate-800 transition-colors">
+                        <td class="px-6 py-3 font-medium text-slate-300 border-b border-slate-800 flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full" style="background-color: ${color};"></span>
+                            ${project}
+                        </td>
+                        ${rowCells}
+                        <td class="px-6 py-3 font-bold text-blue-400 text-right border-b border-slate-800 bg-slate-800/50">${rowTotal.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            projectTableBody.innerHTML = bodyHTML;
         }
 
         function renderTable(monthKeys, monthLabels, usersList, userMap) {
