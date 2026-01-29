@@ -255,25 +255,31 @@
 
             </div>
 
-            <!-- Footer Info -->
-            <div
-                class="absolute bottom-0 left-0 p-2 z-50 flex items-center gap-3 bg-slate-900 border border-slate-800 rounded-md">
-                <span id="file-info" class="text-xs text-slate-300 font-medium pointer-events-none"></span>
-                <button id="copy-bookmark-btn" onclick="copyBookmarkUrl()"
-                    class="text-xs text-slate-400 hover:text-blue-400 flex items-center gap-1 pointer-events-auto transition-colors"
-                    title="Copy URL from address bar (already updated with filename)">
-                    <i class="ph ph-link"></i> Copy URL
-                </button>
-                <a href="https://github.com/darkcolonist/openproject-export-monthly-visualizer" target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-xs text-slate-400 hover:text-blue-400 flex items-center gap-1 pointer-events-auto transition-colors"
-                    title="View source on GitHub">
-                    <i class="ph ph-github-logo"></i> GitHub
-                </a>
-            </div>
+            <!-- Footer Bar -->
+            <footer class="w-full bg-slate-900 border-t border-slate-800 p-3 shrink-0 z-40 relative">
+                <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-6">
+                    <span id="file-info" class="text-xs text-slate-400 font-medium"></span>
+
+                    <div class="flex items-center gap-4">
+                        <button id="copy-bookmark-btn" onclick="copyBookmarkUrl()"
+                            class="text-xs text-slate-400 hover:text-blue-400 flex items-center gap-1 transition-colors"
+                            title="Copy URL from address bar">
+                            <i class="ph ph-link"></i> Copy URL
+                        </button>
+
+                        <div class="w-px h-3 bg-slate-700 mx-1"></div>
+
+                        <a href="https://github.com/darkcolonist/openproject-export-monthly-visualizer" target="_blank"
+                            rel="noopener noreferrer"
+                            class="text-xs text-slate-400 hover:text-blue-400 flex items-center gap-1 transition-colors">
+                            <i class="ph ph-github-logo"></i> GitHub
+                        </a>
+                    </div>
+                </div>
+            </footer>
 
             <!-- Floating Navigation -->
-            <div id="floating-nav" class="fixed bottom-6 right-6 flex flex-col gap-2 z-50">
+            <div id="floating-nav" class="fixed bottom-20 right-6 flex flex-col gap-2 z-50">
                 <button onclick="scrollToSection('chart-section')" data-section="chart-section"
                     class="nav-btn w-10 h-10 bg-slate-800 text-blue-400 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center"
                     title="Top">
