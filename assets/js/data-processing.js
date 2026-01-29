@@ -1,9 +1,8 @@
 window.App = window.App || {};
 
-App.handleFile = function handleFile(file) {
+App.handleFile = function handleFile(file, skipCache = false) {
     const reader = new FileReader();
     reader.onload = (e) => {
-        App.cacheFile(file, e.target.result);
         try {
             const fileBuffer = new Uint8Array(e.target.result);
             const workbook = XLSX.read(fileBuffer, { type: 'array' });
@@ -21,6 +20,11 @@ App.handleFile = function handleFile(file) {
 
             const jsonData = XLSX.utils.sheet_to_json(firstSheet, { range: headerIndex, defval: "" });
             if (!jsonData.length) { alert("No valid data found."); return; }
+            
+            // Cache file with row count
+            if (!skipCache) {
+                App.cacheFile(file, e.target.result, jsonData.length);
+            }
 
             const monthMap = {};
             const userMap = {};

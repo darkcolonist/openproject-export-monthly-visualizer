@@ -23,8 +23,10 @@ The **Cost Report Visualizer** is a specialized, client-side web application des
 
 * **Intelligent File Handling:**
   * *URL Parameter Support:* Create bookmarkable URLs for quick access to specific reports.
-  * *Automatic Caching:* Files cached in IndexedDB for instant reload within 1 hour.
-  * *One-Click Reload:* Restore the last loaded file if it is still cached.
+  * *Automatic Caching:* Up to 5 most recent files cached in IndexedDB for 24 hours.
+  * *Recently Uploaded Files:* Visual list showing cached files with row counts and upload timestamps.
+  * *One-Click Reload:* Load any cached file instantly from the upload page.
+  * *Cache Management:* Clear all cached files with a single click and confirmation.
 
 * **Dark Mode Interface:** A professional, high-contrast dark theme optimized for readability and extended usage.
 
@@ -33,6 +35,10 @@ The **Cost Report Visualizer** is a specialized, client-side web application des
 * **High-Resolution Export:** One-click functionality to render and download charts as PNG files for presentation decks.
 
 * **Dashboard Controls:** Collapse/expand the chart and use floating navigation buttons to jump between sections.
+
+* **Open Source Integration:**
+  * *GitHub Links:* Quick access to the source repository from both the dashboard footer and upload page.
+  * *Copy URL Feature:* Share or bookmark specific reports with automatically generated URLs.
 
 ## Input Specifications
 
@@ -79,15 +85,22 @@ http://localhost:8000/index.html?upload="cost-report-2026-01-28.xls"
 2. Click "Copy URL" button in the footer
 3. Paste and save the URL as a browser bookmark
 4. Next time you open the bookmark:
-   - If the file was cached (within 1 hour), it loads automatically
-   - Otherwise, the application highlights the expected filename for easy selection
+   - If the file was cached (within 24 hours), it loads automatically
+   - Otherwise, the application shows a message prompting you to upload the file
+5. Access any of your 5 most recent files from the "Recently Uploaded Files" list
 
 #### Automatic File Caching
 
 - Files are automatically cached in browser storage (IndexedDB)
-- Cached files remain valid for 1 hour
+- **Up to 5 most recent files** are retained automatically
+- Cached files remain valid for **24 hours**
 - Enables instant reload without re-uploading
-- Click "Reload: [filename]" button when available to restore the last loaded file
+- **Recently Uploaded Files list** on the upload page shows:
+  - File name with clickable reload
+  - Number of data rows processed
+  - Time since upload (e.g., "5m ago", "2h ago")
+- **Clear Cache** button to remove all cached files with confirmation
+- Oldest files are automatically removed when the 5-file limit is reached
 
 ## Technical Architecture
 
@@ -125,16 +138,16 @@ README.md
 
 **Assets at a glance:**
 - `assets/css/app.css`: Core styling and custom UI behaviors (dark mode, sticky columns, floating headers).
-- `assets/js/boot.js`: App bootstrap and event wiring on page load.
+- `assets/js/boot.js`: App bootstrap, database initialization, and event wiring on page load.
 - `assets/js/charts.js`: Chart rendering, styling, and PNG export logic.
 - `assets/js/data-processing.js`: File parsing, schema detection, and data normalization.
 - `assets/js/dom.js`: Centralized DOM references and cache.
 - `assets/js/scroll.js`: Scroll navigation and smart sticky header orchestration.
 - `assets/js/state.js`: Shared app state and globals.
-- `assets/js/storage.js`: URL parameter handling, caching, and reload workflows.
+- `assets/js/storage.js`: IndexedDB management, file caching (5 files, 24h), URL parameters, and cache operations.
 - `assets/js/tables.js`: Project and developer table rendering.
-- `assets/js/ui.js`: View switching and chart toggle interactions.
-- `assets/js/utils.js`: Shared helpers (formatting, colors, escaping).
+- `assets/js/ui.js`: View switching, chart toggle, and modal dialogs (custom confirm).
+- `assets/js/utils.js`: Shared helpers (formatting, colors, time display, escaping).
 - `assets/img/snapshot.png`: README screenshot for quick product context.
 
 ## System Notes

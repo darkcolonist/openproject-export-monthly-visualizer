@@ -29,13 +29,16 @@ App.bindUploadEvents = function bindUploadEvents() {
 document.addEventListener('DOMContentLoaded', () => {
     App.cacheDom();
     App.bindUploadEvents();
-    App.checkUrlParameter();
-    setTimeout(App.getReloadButton, 100);
+    
+    App.initializeDatabase((success) => {
+        if (success) {
+            App.checkUrlParameter();
+            setTimeout(App.displayCachedFilesList, 100);
+        }
+    });
 });
 
-window.resetToUpload = App.resetToUpload;
 window.toggleChart = App.toggleChart;
 window.downloadChart = App.downloadChart;
 window.scrollToSection = App.scrollToSection;
 window.copyBookmarkUrl = App.copyBookmarkUrl;
-window.reloadLastFile = App.reloadLastFile;
