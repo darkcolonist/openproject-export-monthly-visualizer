@@ -16,7 +16,8 @@ App.renderProjectTable = function renderProjectTable(monthKeys, monthLabels, pro
     projectsList.forEach((project, index) => {
         let rowTotal = 0;
         let rowCells = '';
-        const color = App.utils.getColor(index);
+        const isOthers = project.startsWith('Others (');
+        const color = isOthers ? '#64748b' : App.utils.getColor(index);
 
         monthKeys.forEach(mKey => {
             const val = projectMap[project][mKey] || 0;

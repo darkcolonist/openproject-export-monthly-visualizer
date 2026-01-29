@@ -45,6 +45,8 @@ App.resetToUpload = function resetToUpload() {
     if (projectTableBody) projectTableBody.innerHTML = '';
     if (tableHeaderRow) tableHeaderRow.innerHTML = '';
     if (tableBody) tableBody.innerHTML = '';
+    if (App.elements.projectLegend) App.elements.projectLegend.innerHTML = '';
+    if (App.elements.developerLegend) App.elements.developerLegend.innerHTML = '';
 
     if (App.state.developerChartInstance) {
         App.state.developerChartInstance.destroy();

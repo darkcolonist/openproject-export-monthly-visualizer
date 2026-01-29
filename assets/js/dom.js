@@ -15,6 +15,7 @@ App.cacheDom = function cacheDom() {
         chartContent: document.getElementById('chart-content'),
         toggleChartBtn: document.getElementById('toggle-chart-btn'),
         chartCanvas: document.getElementById('myChart'),
+        projectLegend: document.getElementById('project-legend'),
         scrollContent: document.getElementById('scroll-content'),
         floatingHeader: document.getElementById('floating-header'),
         projectThead: document.getElementById('project-thead'),
@@ -26,6 +27,7 @@ App.cacheDom = function cacheDom() {
         insightDevSelect: document.getElementById('insight-dev-select'),
         insightProjSelect: document.getElementById('insight-proj-select'),
         developerChartCanvas: document.getElementById('developerChart'),
+        developerLegend: document.getElementById('developer-legend'),
         insightPlaceholder: document.getElementById('insight-placeholder'),
         floatingNav: document.getElementById('floating-nav'),
         navButtons: document.querySelectorAll('.nav-btn')

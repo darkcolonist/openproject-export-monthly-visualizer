@@ -122,3 +122,130 @@ body {
     border-bottom-width: 0 !important;
     pointer-events: none;
 }
+
+/* Legend Styles */
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 16px;
+    margin-top: 8px;
+    max-height: 80px;
+    overflow-y: auto;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 500;
+    color: #94a3b8;
+    background: #1e293b;
+    padding: 3px 10px;
+    border-radius: 6px;
+    border: 1px solid #334155;
+    cursor: default;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.legend-item:hover {
+    background: #334155;
+    color: #f1f5f9;
+    border-color: #475569;
+}
+
+.legend-color {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+}
+
+.legend-item.others {
+    cursor: pointer;
+    border-style: dashed;
+    position: relative;
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.legend-item.others:hover {
+    background-color: #3b82f6;
+    color: white;
+}
+
+/* Modal for "Others" projects */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-container {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 480px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: modalAppear 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #334155;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-content {
+    padding: 0;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #334155;
+    text-align: right;
+}
+
+.modal-list-item {
+    padding: 12px 24px;
+    border-bottom: 1px solid #334155;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.modal-list-item:hover {
+    background: #0f172a;
+}
+
+.modal-list-item:last-child {
+    border-bottom: none;
+}
