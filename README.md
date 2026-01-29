@@ -98,6 +98,45 @@ This tool is a static web app (HTML + CSS + JS assets) to ensure maximum portabi
 * **Tailwind CSS:** A utility-first CSS framework for rapid, responsive UI development.
 * **Phosphor Icons:** A clean, consistent icon family for the user interface.
 
+## Project Structure
+
+The repository is organized for easy onboarding and straightforward edits:
+
+```
+index.html
+assets/
+  css/
+    app.css
+  img/
+    snapshot.png
+  js/
+    boot.js
+    charts.js
+    data-processing.js
+    dom.js
+    scroll.js
+    state.js
+    storage.js
+    tables.js
+    ui.js
+    utils.js
+README.md
+```
+
+**Assets at a glance:**
+- `assets/css/app.css`: Core styling and custom UI behaviors (dark mode, sticky columns, floating headers).
+- `assets/js/boot.js`: App bootstrap and event wiring on page load.
+- `assets/js/charts.js`: Chart rendering, styling, and PNG export logic.
+- `assets/js/data-processing.js`: File parsing, schema detection, and data normalization.
+- `assets/js/dom.js`: Centralized DOM references and cache.
+- `assets/js/scroll.js`: Scroll navigation and smart sticky header orchestration.
+- `assets/js/state.js`: Shared app state and globals.
+- `assets/js/storage.js`: URL parameter handling, caching, and reload workflows.
+- `assets/js/tables.js`: Project and developer table rendering.
+- `assets/js/ui.js`: View switching and chart toggle interactions.
+- `assets/js/utils.js`: Shared helpers (formatting, colors, escaping).
+- `assets/img/snapshot.png`: README screenshot for quick product context.
+
 ## System Notes
 
 * **Data Filtration:** Entries with zero hours are programmatically filtered out to ensure visualization integrity.
