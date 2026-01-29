@@ -2,7 +2,11 @@
 
 ## Overview
 
-The **Cost Report Visualizer** is a specialized, client-side web application designed to transform raw Excel and CSV cost reports into high-fidelity visual analytics. By processing data locally within the browser, it ensures zero-latency performance and absolute data privacy, making it an ideal tool for sensitive project management reporting.
+The **Cost Report Visualizer** is a specialized, client-side web application designed to transform raw Excel and CSV cost reports into high-fidelity visual analytics. By processing data locally within the browser, it ensures low-latency performance and absolute data privacy, making it an ideal tool for sensitive project management reporting.
+
+## Screenshot
+
+![App snapshot](assets/img/snapshot.png)
 
 ## Key Features
 
@@ -13,20 +17,22 @@ The **Cost Report Visualizer** is a specialized, client-side web application des
 * **Developer Utilization Matrix:** A comprehensive data table displaying exact hour logs per developer, organized chronologically.
 
 * **Enhanced Table Navigation:**
-  * *Sticky Headers:* Month column headers remain fixed while scrolling vertically through data rows.
-  * *Fixed First Column:* Project/Developer names stay visible during horizontal scrolling.
-  * *Smart Sticky Behavior:* Headers automatically unstick when scrolling past their table section.
+  * *Floating Sticky Headers:* Active table headers stay visible while their table section is in view.
+  * *Horizontal Scroll + Fixed First Column:* Project/Developer names stay visible during horizontal scrolling.
+  * *Synced Scrolling:* Floating headers mirror horizontal scroll for accurate column alignment.
 
 * **Intelligent File Handling:**
   * *URL Parameter Support:* Create bookmarkable URLs for quick access to specific reports.
   * *Automatic Caching:* Files cached in IndexedDB for instant reload within 1 hour.
-  * *One-Click Reload:* Quickly restore previously loaded files without re-uploading.
+  * *One-Click Reload:* Restore the last loaded file if it is still cached.
 
 * **Dark Mode Interface:** A professional, high-contrast dark theme optimized for readability and extended usage.
 
 * **Smart Header Detection:** Algorithms automatically identify the correct data schema, bypassing metadata rows often found in exported reports.
 
 * **High-Resolution Export:** One-click functionality to render and download charts as PNG files for presentation decks.
+
+* **Dashboard Controls:** Collapse/expand the chart and use floating navigation buttons to jump between sections.
 
 ## Input Specifications
 
@@ -43,11 +49,15 @@ The application is engineered to parse standard Cost Reports exported in `.xls`,
 
 ### Standard Workflow
 
-1. **Deployment:** Save the provided `index.html` file to a local directory.
-2. **Launch:** Open the file using any standard web browser (Google Chrome, Microsoft Edge, Firefox, or Safari).
+1. **Deployment:** Clone the repo and serve it with a local web server (localhost or vhost).
+2. **Launch:** Open the site in a browser (Google Chrome, Microsoft Edge, Firefox, or Safari).
 3. **Data Ingestion:** Drag and drop the target Cost Report file into the designated upload area.
 4. **Analysis:** The dashboard will render immediately upon successful file parsing.
 5. **Export:** Select "Save Image" to export the visual data for external reporting.
+
+**Quick server options (choose one):**
+- `python -m http.server 8000` then open `http://localhost:8000/`
+- `npx serve` then open the printed localhost URL
 
 ### Advanced Features
 
@@ -56,17 +66,17 @@ The application is engineered to parse standard Cost Reports exported in `.xls`,
 Create bookmarkable URLs for frequently analyzed reports:
 
 ```
-file:///path/to/index.html?upload="filename.xls"
+http://localhost:8000/index.html?upload="filename.xls"
 ```
 
 **Example:**
 ```
-file:///D:/_gits/dc.openproject-export-monthly-visualizer/index.html?upload="cost-report-2026-01-28.xls"
+http://localhost:8000/index.html?upload="cost-report-2026-01-28.xls"
 ```
 
 **How it works:**
 1. Load a file normally (drag & drop or click to upload)
-2. Click "Copy Bookmark URL" button in the footer
+2. Click "Copy URL" button in the footer
 3. Paste and save the URL as a browser bookmark
 4. Next time you open the bookmark:
    - If the file was cached (within 1 hour), it loads automatically
@@ -81,7 +91,7 @@ file:///D:/_gits/dc.openproject-export-monthly-visualizer/index.html?upload="cos
 
 ## Technical Architecture
 
-This tool is architected as a **Single File Application (SFA)** to ensure maximum portability and ease of distribution. It leverages the following libraries via CDN:
+This tool is a static web app (HTML + CSS + JS assets) to ensure maximum portability and ease of distribution. It leverages the following libraries via CDN:
 
 * **SheetJS (xlsx):** Enterprise-grade parsing for spreadsheet data structures.
 * **Chart.js:** A flexible charting library for rendering responsive, interactive visualizations.
