@@ -3,19 +3,34 @@ window.App = window.App || {};
 App.scrollToSection = function scrollToSection(id) {
     const { scrollContent } = App.elements;
     const el = document.getElementById(id);
-    if (el && scrollContent) {
-        if (id === 'chart-section') {
-            scrollContent.scrollTo({ top: 0, behavior: 'smooth' });
-            return;
-        }
+    if (!el || !scrollContent) return;
 
-        const top = el.offsetTop;
-        scrollContent.scrollTo({
-            top: top,
-            behavior: "smooth"
-        });
+    const start = scrollContent.scrollTop;
+    const target = id === 'chart-section' ? 0 : el.offsetTop;
+    const distance = target - start;
+    const duration = 800;
+    let startTime = null;
+
+    function easeInOutQuad(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
     }
+
+    function animation(currentTime) {
+        if (startTime === null) startTime = currentTime;
+        const timeElapsed = currentTime - startTime;
+        const progress = Math.min(timeElapsed / duration, 1);
+        const ease = easeInOutQuad(progress);
+
+        scrollContent.scroll(0, start + distance * ease);
+
+        if (timeElapsed < duration) {
+            requestAnimationFrame(animation);
+        }
+    }
+
+    requestAnimationFrame(animation);
 };
+
 
 App.initializeStickyHeaders = function initializeStickyHeaders() {
     const {
