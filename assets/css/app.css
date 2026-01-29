@@ -72,3 +72,13 @@ body { background-color: #020617; color: #f1f5f9; }
 .table-section {
     position: relative;
 }
+
+/* Nav Button Active State */
+.nav-btn.active {
+    background-color: #3b82f6 !important; /* phBlue */
+    color: white !important;
+    border-color: #3b82f6 !important;
+    transform: scale(1.15);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+}
+

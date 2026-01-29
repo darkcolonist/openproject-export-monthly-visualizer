@@ -132,3 +132,47 @@ App.initializeStickyHeaders = function initializeStickyHeaders() {
 
     updateFloatingHeader();
 };
+
+App.initializeScrollNavigationHighlighting = function initializeScrollNavigationHighlighting() {
+    const { scrollContent, navButtons } = App.elements;
+    if (!scrollContent || !navButtons || navButtons.length === 0) return;
+
+    const sections = [
+        'chart-section',
+        'project-section',
+        'developer-section',
+        'insights-section'
+    ].map(id => document.getElementById(id)).filter(Boolean);
+
+    function updateActiveNav() {
+        const scrollTop = scrollContent.scrollTop;
+        let activeSectionId = 'chart-section';
+
+        // The chart-section is outside scrollContent, so if scrollTop is 0, it's chart.
+        // If we move down, we check other sections.
+        if (scrollTop > 100) {
+            sections.forEach(section => {
+                if (section.id === 'chart-section') return;
+
+                // offsetTop is relative to scroll-content because it's position: relative
+                if (scrollTop >= section.offsetTop - 150) {
+                    activeSectionId = section.id;
+                }
+            });
+        }
+
+        navButtons.forEach(btn => {
+            const btnSection = btn.getAttribute('data-section');
+            if (btnSection === activeSectionId) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    scrollContent.addEventListener('scroll', updateActiveNav);
+    // Initial call after a small delay to ensure rendering is complete
+    setTimeout(updateActiveNav, 100);
+};
+

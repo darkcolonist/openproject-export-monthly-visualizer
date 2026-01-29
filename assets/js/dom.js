@@ -25,6 +25,9 @@ App.cacheDom = function cacheDom() {
         insightDevSelect: document.getElementById('insight-dev-select'),
         insightProjSelect: document.getElementById('insight-proj-select'),
         developerChartCanvas: document.getElementById('developerChart'),
-        insightPlaceholder: document.getElementById('insight-placeholder')
+        insightPlaceholder: document.getElementById('insight-placeholder'),
+        floatingNav: document.getElementById('floating-nav'),
+        navButtons: document.querySelectorAll('.nav-btn')
     };
 };
+

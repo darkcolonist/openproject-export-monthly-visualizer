@@ -162,8 +162,12 @@ App.handleFile = function handleFile(file, skipCache = false) {
             // Populate Insights
             App.populateInsightControls(usersList, detailedMap);
 
-            setTimeout(() => App.initializeStickyHeaders(), 100);
+            setTimeout(() => {
+                App.initializeStickyHeaders();
+                App.initializeScrollNavigationHighlighting();
+            }, 100);
             App.generateBookmarkUrl(file.name);
+
         } catch (err) {
             console.error(err);
             alert("Error parsing file. Please check the format.");

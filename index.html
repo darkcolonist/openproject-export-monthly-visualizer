@@ -270,24 +270,24 @@
             </div>
 
             <!-- Floating Navigation -->
-            <div class="fixed bottom-6 right-6 flex flex-col gap-2 z-50">
-                <button onclick="scrollToSection('chart-section')"
-                    class="w-10 h-10 bg-slate-800 text-blue-400 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center"
+            <div id="floating-nav" class="fixed bottom-6 right-6 flex flex-col gap-2 z-50">
+                <button onclick="scrollToSection('chart-section')" data-section="chart-section"
+                    class="nav-btn w-10 h-10 bg-slate-800 text-blue-400 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center"
                     title="Top">
                     <i class="ph ph-arrow-up"></i>
                 </button>
-                <button onclick="scrollToSection('project-section')"
-                    class="w-10 h-10 bg-slate-800 text-blue-400 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center"
+                <button onclick="scrollToSection('project-section')" data-section="project-section"
+                    class="nav-btn w-10 h-10 bg-slate-800 text-blue-400 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center"
                     title="Projects">
                     <i class="ph ph-briefcase"></i>
                 </button>
-                <button onclick="scrollToSection('developer-section')"
-                    class="w-10 h-10 bg-slate-800 text-blue-400 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center"
+                <button onclick="scrollToSection('developer-section')" data-section="developer-section"
+                    class="nav-btn w-10 h-10 bg-slate-800 text-blue-400 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center"
                     title="Developers">
                     <i class="ph ph-users"></i>
                 </button>
-                <button onclick="scrollToSection('insights-section')"
-                    class="w-10 h-10 bg-slate-800 text-blue-400 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center"
+                <button onclick="scrollToSection('insights-section')" data-section="insights-section"
+                    class="nav-btn w-10 h-10 bg-slate-800 text-blue-400 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center"
                     title="Insights">
                     <i class="ph ph-chart-bar"></i>
                 </button>
