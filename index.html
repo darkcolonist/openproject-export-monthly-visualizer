@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cost Report Visualizer</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <!-- SheetJS (XLS/XLSX/CSV Parser) -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
@@ -51,12 +51,69 @@
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
+        /* Sticky column styles */
+        .sticky-col {
+            position: sticky;
+            left: 0;
+            z-index: 15;
+        }
+        .sticky-col-header {
+            position: sticky;
+            left: 0;
+            z-index: 25;
+        }
+        .sticky-col-shadow {
+            box-shadow: 2px 0 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Smart sticky header behavior */
+        .table-scroll-wrapper {
+            position: relative;
+            overflow-x: auto;
+            overflow-y: visible;
+        }
+        
+        /* Floating sticky header */
+        .floating-sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            background-color: #0f172a;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            max-height: 0;
+            overflow: hidden;
+        }
+        
+        .floating-sticky-header.active {
+            opacity: 1;
+            visibility: visible;
+            max-height: 80px;
+        }
+        
+        .floating-header-inner {
+            overflow-x: auto;
+            overflow-y: hidden;
+            margin: 0 2rem;
+        }
+        
+        .floating-sticky-header table {
+            margin: 0;
+        }
+        
+        /* Section markers for intersection observer */
+        .table-section {
+            position: relative;
+        }
     </style>
 </head>
-<body class="h-screen flex flex-col font-sans">
+<body class="h-screen flex flex-col font-sans bg-slate-950 overflow-hidden">
 
     <!-- Header -->
-    <header class="bg-slate-900 border-b border-slate-800 px-8 py-4 flex justify-between items-center shadow-sm shrink-0 z-10">
+    <header class="bg-slate-900 border-b border-slate-800 px-8 py-4 flex justify-between items-center shadow-sm shrink-0 z-40 relative">
         <div class="flex items-center gap-3">
             <div class="bg-slate-800 text-blue-400 p-2 rounded-lg border border-slate-700">
                 <i class="ph ph-calendar-check text-xl"></i>
@@ -66,16 +123,16 @@
                 <p class="text-xs text-slate-400">Project Trends & Developer Breakdown</p>
             </div>
         </div>
-        <button onclick="window.location.reload()" class="text-sm font-medium text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-2">
+        <button onclick="resetToUpload()" class="text-sm font-medium text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-2">
             <i class="ph ph-arrow-counter-clockwise"></i> New File
         </button>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col items-center justify-center p-6 overflow-hidden relative">
-        
+    <main class="flex-1 flex flex-col items-center p-0 relative overflow-hidden">
+
         <!-- 1. Upload View (Centered) -->
-        <div id="upload-container" class="w-full max-w-xl transition-all duration-500 ease-in-out transform">
+        <div id="upload-container" class="w-full max-w-xl transition-all duration-500 ease-in-out transform mt-20 p-6 absolute inset-0 m-auto h-fit">
             <div class="text-center mb-8">
                 <h2 class="text-2xl font-bold text-slate-100 mb-2">Upload Cost Report</h2>
                 <p class="text-slate-400">Drag and drop your .xls or .csv file to see monthly trends.</p>
@@ -92,48 +149,105 @@
         </div>
 
         <!-- 2. Dashboard View (Hidden initially) -->
-        <div id="dashboard-container" class="w-full max-w-7xl h-full flex flex-col hidden opacity-0 transition-opacity duration-700 gap-4">
-            
-            <!-- Top Section: Chart -->
-            <div class="bg-slate-900 rounded-xl shadow-lg border border-slate-800 flex-[3] flex flex-col p-4 min-h-0 relative">
-                <div class="flex justify-between items-start mb-2 shrink-0">
+        <div id="dashboard-container" class="w-full h-full flex flex-col hidden opacity-0 transition-opacity duration-700">
+
+            <!-- Fixed Chart Section -->
+            <div id="chart-section" class="bg-slate-900 border-b border-slate-800 flex flex-col p-4 shrink-0 shadow-lg relative z-30 transition-all">
+                <div class="flex justify-between items-start mb-2 shrink-0 px-4">
                     <div>
                         <h3 class="text-lg font-bold text-slate-100">Monthly Hours Trend</h3>
                         <p class="text-xs text-slate-500">Stacked by <span class="font-bold text-blue-400">Project</span></p>
                     </div>
-                    <button onclick="downloadChart()" class="text-xs font-medium text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 hover:bg-slate-700 transition-colors">
-                        <i class="ph ph-download-simple"></i> Save Image
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleChart()" id="toggle-chart-btn" class="text-xs font-medium text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 hover:bg-slate-700 transition-colors">
+                            <i class="ph ph-caret-up"></i> Collapse
+                        </button>
+                        <button onclick="downloadChart()" class="text-xs font-medium text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 hover:bg-slate-700 transition-colors">
+                            <i class="ph ph-download-simple"></i> Save Image
+                        </button>
+                    </div>
                 </div>
-                <div class="relative flex-1 w-full min-h-0">
+                <div id="chart-content" class="relative w-full h-80 transition-all overflow-hidden px-4">
                     <canvas id="myChart"></canvas>
                 </div>
             </div>
 
-            <!-- Bottom Section: Data Table -->
-            <div class="bg-slate-900 rounded-xl shadow-lg border border-slate-800 flex-[2] flex flex-col p-0 min-h-0 overflow-hidden">
-                <div class="p-4 border-b border-slate-800 bg-slate-900 shrink-0">
-                    <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
-                        <i class="ph ph-users text-blue-400"></i> Developer Breakdown
-                    </h3>
+            <!-- Scrollable Content Area -->
+            <div id="scroll-content" class="flex-1 overflow-y-auto relative scroll-smooth bg-slate-950">
+                <!-- Floating Sticky Header -->
+                <div id="floating-header" class="floating-sticky-header"></div>
+
+                <!-- Middle Section: Project Breakdown -->
+                <div id="project-section" class="flex flex-col p-0 overflow-hidden shrink-0 table-section">
+                    <div class="p-4 bg-slate-950 shrink-0">
+                        <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2 px-4">
+                            <i class="ph ph-briefcase text-blue-400"></i> Project Breakdown
+                        </h3>
+                    </div>
+                    <div class="px-8 pb-8">
+                        <div class="bg-slate-900 rounded-xl border border-slate-800">
+                            <div class="table-scroll-wrapper">
+                                <table id="project-table" class="text-sm text-left border-collapse" style="min-width: 100%;">
+                                    <thead id="project-thead" class="text-xs text-slate-400 uppercase bg-slate-900 border-b border-slate-700">
+                                        <tr id="project-table-header-row">
+                                            <!-- Headers injected via JS -->
+                                        </tr>
+                                    </thead>
+                                    <tbody id="project-table-body" class="divide-y divide-slate-800">
+                                        <!-- Rows injected via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="overflow-auto flex-1 custom-scrollbar">
-                    <table class="w-full text-sm text-left border-collapse">
-                        <thead class="text-xs text-slate-400 uppercase bg-slate-800 sticky top-0 z-10 shadow-sm border-b border-slate-700">
-                            <tr id="table-header-row">
-                                <!-- Headers injected via JS -->
-                            </tr>
-                        </thead>
-                        <tbody id="table-body" class="divide-y divide-slate-800">
-                            <!-- Rows injected via JS -->
-                        </tbody>
-                    </table>
+
+                <!-- Bottom Section: Data Table -->
+                <div id="developer-section" class="flex flex-col p-0 overflow-hidden shrink-0 table-section">
+                    <div class="p-4 bg-slate-950 shrink-0">
+                        <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2 px-4">
+                            <i class="ph ph-users text-blue-400"></i> Developer Breakdown
+                        </h3>
+                    </div>
+                    <div class="px-8 pb-20">
+                        <div class="bg-slate-900 rounded-xl border border-slate-800">
+                            <div class="table-scroll-wrapper">
+                                <table id="developer-table" class="text-sm text-left border-collapse" style="min-width: 100%;">
+                                    <thead id="developer-thead" class="text-xs text-slate-400 uppercase bg-slate-900 border-b border-slate-700">
+                                        <tr id="table-header-row">
+                                            <!-- Headers injected via JS -->
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-body" class="divide-y divide-slate-800">
+                                        <!-- Rows injected via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
             </div>
 
             <!-- Footer Info -->
-            <div class="flex justify-between items-center px-2 shrink-0 pb-2">
-                <span id="file-info" class="text-xs text-slate-500 font-medium"></span>
+            <div class="absolute bottom-0 left-0 p-2 z-50 flex items-center gap-3 bg-slate-900 border border-slate-800 rounded-md">
+                <span id="file-info" class="text-xs text-slate-300 font-medium pointer-events-none"></span>
+                <button id="copy-bookmark-btn" onclick="copyBookmarkUrl()" class="text-xs text-slate-400 hover:text-blue-400 flex items-center gap-1 pointer-events-auto transition-colors" title="Copy URL from address bar (already updated with filename)">
+                    <i class="ph ph-link"></i> Copy URL
+                </button>
+            </div>
+
+            <!-- Floating Navigation -->
+            <div class="fixed bottom-6 right-6 flex flex-col gap-2 z-50">
+                <button onclick="scrollToSection('chart-section')" class="w-10 h-10 bg-slate-800 text-blue-400 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center" title="Top">
+                    <i class="ph ph-arrow-up"></i>
+                </button>
+                <button onclick="scrollToSection('project-section')" class="w-10 h-10 bg-slate-800 text-blue-400 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center" title="Projects">
+                    <i class="ph ph-briefcase"></i>
+                </button>
+                <button onclick="scrollToSection('developer-section')" class="w-10 h-10 bg-slate-800 text-blue-400 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center" title="Developers">
+                    <i class="ph ph-users"></i>
+                </button>
             </div>
         </div>
 
@@ -149,23 +263,107 @@
         const fileInfo = document.getElementById('file-info');
         const tableHeaderRow = document.getElementById('table-header-row');
         const tableBody = document.getElementById('table-body');
+        const projectTableHeaderRow = document.getElementById('project-table-header-row');
+        const projectTableBody = document.getElementById('project-table-body');
 
         // Set Chart.js Defaults for Dark Mode
         Chart.defaults.color = '#94a3b8';
         Chart.defaults.borderColor = '#334155';
 
+        // Check for URL parameter on page load
+        function checkUrlParameter() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const uploadParam = urlParams.get('upload');
+            
+            if (uploadParam) {
+                // Store the requested file path
+                localStorage.setItem('requestedFilePath', uploadParam);
+                
+                // Extract filename from path
+                const filename = uploadParam.split(/[\\/]/).pop();
+                
+                // Show helpful message in drop zone
+                const dropZoneText = dropZone.querySelector('p:last-child');
+                dropZoneText.innerHTML = `<span class="text-blue-400 font-semibold">Looking for: ${filename}</span><br><span class="text-xs">Click to select this file</span>`;
+                
+                // Try to load from cache first
+                loadCachedFile(filename);
+            }
+        }
+
+        // Save file to IndexedDB for future reload
+        function cacheFile(file, data) {
+            try {
+                const dbRequest = indexedDB.open('FileCache', 1);
+                
+                dbRequest.onupgradeneeded = function(event) {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('files')) {
+                        db.createObjectStore('files', { keyPath: 'name' });
+                    }
+                };
+                
+                dbRequest.onsuccess = function(event) {
+                    const db = event.target.result;
+                    const transaction = db.transaction(['files'], 'readwrite');
+                    const store = transaction.objectStore('files');
+                    
+                    store.put({
+                        name: file.name,
+                        data: data,
+                        timestamp: Date.now()
+                    });
+                };
+            } catch (e) {
+                console.log('Could not cache file:', e);
+            }
+        }
+
+        // Load file from IndexedDB cache
+        function loadCachedFile(filename) {
+            try {
+                const dbRequest = indexedDB.open('FileCache', 1);
+                
+                dbRequest.onsuccess = function(event) {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('files')) return;
+                    
+                    const transaction = db.transaction(['files'], 'readonly');
+                    const store = transaction.objectStore('files');
+                    const getRequest = store.get(filename);
+                    
+                    getRequest.onsuccess = function() {
+                        if (getRequest.result) {
+                            const cachedFile = getRequest.result;
+                            const age = Date.now() - cachedFile.timestamp;
+                            
+                            // Auto-load if cached within last hour
+                            if (age < 3600000) {
+                                console.log('Loading cached file:', filename);
+                                const blob = new Blob([cachedFile.data]);
+                                const file = new File([blob], filename);
+                                handleFile(file);
+                            }
+                        }
+                    };
+                };
+            } catch (e) {
+                console.log('Could not load cached file:', e);
+            }
+        }
+
         // --- Event Listeners ---
         dropZone.addEventListener('click', () => fileInput.click());
-        
+
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             dropZone.classList.add('drag-active');
         });
-        
+
         dropZone.addEventListener('dragleave', () => {
             dropZone.classList.remove('drag-active');
         });
-        
+
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('drag-active');
@@ -176,16 +374,23 @@
             if (e.target.files.length) handleFile(e.target.files[0]);
         });
 
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            checkUrlParameter();
+        });
+
         // --- Logic ---
 
         function handleFile(file) {
             const reader = new FileReader();
             reader.onload = (e) => {
+                // Cache the file data for quick reload
+                cacheFile(file, e.target.result);
                 try {
                     const fileBuffer = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(fileBuffer, { type: 'array' });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    
+
                     // 1. Detect Header Row
                     const rawRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
                     let headerIndex = 0;
@@ -202,8 +407,8 @@
                     if (!jsonData.length) { alert("No valid data found."); return; }
 
                     // 3. Process Data
-                    const monthMap = {}; 
-                    const userMap = {}; 
+                    const monthMap = {};
+                    const userMap = {};
                     const allUsersSet = new Set();
                     const projectMap = {};
                     const allProjectsSet = new Set();
@@ -225,7 +430,7 @@
                                 // Parse Date
                                 let monthKey = "";
                                 let monthLabel = "";
-                                
+
                                 if (typeof dateVal === 'number') {
                                     const dateObj = XLSX.SSF.parse_date_code(dateVal);
                                     const mm = String(dateObj.m).padStart(2, '0');
@@ -268,7 +473,7 @@
 
                     // 5. Prepare Chart Datasets
                     const projectsList = Array.from(allProjectsSet).sort();
-                    
+
                     // Filter out projects that have 0 total hours (Cleaner Legend)
                     const activeProjects = projectsList.filter(proj => {
                         const total = Object.values(projectMap[proj]).reduce((a,b) => a+b, 0);
@@ -279,7 +484,7 @@
                     activeProjects.sort((a, b) => {
                         const totalA = Object.values(projectMap[a]).reduce((sum, val) => sum + val, 0);
                         const totalB = Object.values(projectMap[b]).reduce((sum, val) => sum + val, 0);
-                        return totalB - totalA; 
+                        return totalB - totalA;
                     });
 
                     const chartDatasets = activeProjects.map((project, index) => {
@@ -299,7 +504,7 @@
                     usersList.sort((a, b) => {
                         const totalA = Object.values(userMap[a]).reduce((sum, val) => sum + val, 0);
                         const totalB = Object.values(userMap[b]).reduce((sum, val) => sum + val, 0);
-                        return totalB - totalA; 
+                        return totalB - totalA;
                     });
 
                     // 7. Render
@@ -309,7 +514,14 @@
                     fileInfo.textContent = `Source: ${file.name} | ${sortedMonthKeys.length} Months Found`;
 
                     renderStackedChart(monthLabels, chartDatasets);
+                    renderProjectTable(sortedMonthKeys, monthLabels, activeProjects, projectMap);
                     renderTable(sortedMonthKeys, monthLabels, usersList, userMap);
+                    
+                    // Initialize sticky header observers
+                    setTimeout(() => initializeStickyHeaders(), 100);
+                    
+                    // Generate bookmarkable URL
+                    generateBookmarkUrl(file.name);
 
                 } catch (err) {
                     console.error(err);
@@ -317,6 +529,17 @@
                 }
             };
             reader.readAsArrayBuffer(file);
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            if (!text) return text;
+            return String(text)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
 
         // Generate distinctive colors (Bright for Dark Mode)
@@ -344,7 +567,7 @@
 
         function renderStackedChart(labels, datasets) {
             const ctx = document.getElementById('myChart').getContext('2d');
-            
+
             if (chartInstance) chartInstance.destroy();
 
             chartInstance = new Chart(ctx, {
@@ -360,7 +583,7 @@
                         x: {
                             stacked: true,
                             grid: { display: false },
-                            ticks: { 
+                            ticks: {
                                 font: { family: "'Inter', sans-serif", size: 11 },
                                 color: '#94a3b8'
                             }
@@ -406,23 +629,65 @@
             });
         }
 
-        function renderTable(monthKeys, monthLabels, usersList, userMap) {
+        function renderProjectTable(monthKeys, monthLabels, projectsList, projectMap) {
             // 1. Build Header
-            let headerHTML = `<th class="px-6 py-3 font-medium text-slate-400 bg-slate-800 border-b border-slate-700 text-left">Developer</th>`;
+            let headerHTML = `<th class="sticky-col-header sticky-col-shadow px-6 py-3 font-medium text-slate-400 bg-slate-900 border-b border-slate-700 text-left">Project</th>`;
             monthLabels.forEach(label => {
-                headerHTML += `<th class="px-6 py-3 font-medium text-slate-400 bg-slate-800 border-b border-slate-700 text-right whitespace-nowrap">${label}</th>`;
+                headerHTML += `<th class="px-6 py-3 font-medium text-slate-400 bg-slate-900 border-b border-slate-700 text-right whitespace-nowrap">${label}</th>`;
             });
             // Add Total Column
-            headerHTML += `<th class="px-6 py-3 font-bold text-slate-200 bg-slate-800 border-b border-slate-700 text-right">Grand Total</th>`;
+            headerHTML += `<th class="px-6 py-3 font-bold text-slate-200 bg-slate-900 border-b border-slate-700 text-right whitespace-nowrap">Grand Total</th>`;
+            projectTableHeaderRow.innerHTML = headerHTML;
+
+            // 2. Build Rows
+            let bodyHTML = '';
+
+            projectsList.forEach((project, index) => {
+                let rowTotal = 0;
+                let rowCells = '';
+                const color = getColor(index);
+
+                monthKeys.forEach(mKey => {
+                    const val = projectMap[project][mKey] || 0;
+                    rowTotal += val;
+                    const displayVal = val > 0 ? val.toFixed(2) : '<span class="text-slate-700">-</span>';
+                    rowCells += `<td class="px-6 py-3 text-right text-slate-400 border-b border-slate-800">${displayVal}</td>`;
+                });
+
+                bodyHTML += `
+                    <tr class="hover:bg-slate-800 transition-colors">
+                        <td class="sticky-col sticky-col-shadow px-6 py-3 font-medium text-slate-300 border-b border-slate-800 bg-slate-900">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${color};"></span>
+                                <span>${escapeHtml(project)}</span>
+                            </div>
+                        </td>
+                        ${rowCells}
+                        <td class="px-6 py-3 font-bold text-blue-400 text-right border-b border-slate-800 bg-slate-800/50">${rowTotal.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            projectTableBody.innerHTML = bodyHTML;
+        }
+
+        function renderTable(monthKeys, monthLabels, usersList, userMap) {
+            // 1. Build Header
+            let headerHTML = `<th class="sticky-col-header sticky-col-shadow px-6 py-3 font-medium text-slate-400 bg-slate-900 border-b border-slate-700 text-left">Developer</th>`;
+            monthLabels.forEach(label => {
+                headerHTML += `<th class="px-6 py-3 font-medium text-slate-400 bg-slate-900 border-b border-slate-700 text-right whitespace-nowrap">${label}</th>`;
+            });
+            // Add Total Column
+            headerHTML += `<th class="px-6 py-3 font-bold text-slate-200 bg-slate-900 border-b border-slate-700 text-right whitespace-nowrap">Grand Total</th>`;
             tableHeaderRow.innerHTML = headerHTML;
 
             // 2. Build Rows
             let bodyHTML = '';
-            
+
             usersList.forEach((user, index) => {
                 let rowTotal = 0;
                 let rowCells = '';
-                
+
                 monthKeys.forEach(mKey => {
                     const val = userMap[user][mKey] || 0;
                     rowTotal += val;
@@ -432,8 +697,8 @@
 
                 bodyHTML += `
                     <tr class="hover:bg-slate-800 transition-colors">
-                        <td class="px-6 py-3 font-medium text-slate-300 border-b border-slate-800 flex items-center gap-2">
-                            ${user}
+                        <td class="sticky-col sticky-col-shadow px-6 py-3 font-medium text-slate-300 border-b border-slate-800 bg-slate-900">
+                            ${escapeHtml(user)}
                         </td>
                         ${rowCells}
                         <td class="px-6 py-3 font-bold text-blue-400 text-right border-b border-slate-800 bg-slate-800/50">${rowTotal.toFixed(2)}</td>
@@ -450,16 +715,274 @@
             tempCanvas.width = canvas.width;
             tempCanvas.height = canvas.height;
             const tCtx = tempCanvas.getContext('2d');
-            
+
             // Dark background for Export
             tCtx.fillStyle = '#0f172a'; // Slate 900
             tCtx.fillRect(0,0, tempCanvas.width, tempCanvas.height);
             tCtx.drawImage(canvas, 0, 0);
-            
+
             const link = document.createElement('a');
             link.download = 'Monthly_Project_Report.png';
             link.href = tempCanvas.toDataURL('image/png', 1.0);
             link.click();
+        }
+
+        function toggleChart() {
+            const content = document.getElementById('chart-content');
+            const btn = document.getElementById('toggle-chart-btn');
+
+            if (content.classList.contains('h-0')) {
+                // Expand
+                content.classList.remove('h-0');
+                content.classList.add('h-80');
+                btn.innerHTML = '<i class="ph ph-caret-up"></i> Collapse';
+            } else {
+                // Collapse
+                content.classList.remove('h-80');
+                content.classList.add('h-0');
+                btn.innerHTML = '<i class="ph ph-caret-down"></i> Expand';
+            }
+        }
+
+        function scrollToSection(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                // Since scrolling is now inside #scroll-content, we need to scroll that element
+                const scrollContainer = document.getElementById('scroll-content');
+                if (id === 'chart-section') {
+                     // Chart section is fixed/above, so scroll to top 0
+                     scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                     return;
+                }
+
+                // For other sections, we scroll the container
+                // The offsetTop of the element inside the scroll container
+                // But the element might be wrapped.
+                // project-section is a direct child of scroll-content? Yes.
+                const top = el.offsetTop;
+                scrollContainer.scrollTo({
+                    top: top,
+                    behavior: "smooth"
+                });
+            }
+        }
+
+        function initializeStickyHeaders() {
+            const scrollContainer = document.getElementById('scroll-content');
+            const floatingHeader = document.getElementById('floating-header');
+            const projectThead = document.getElementById('project-thead');
+            const developerThead = document.getElementById('developer-thead');
+            const projectTable = document.getElementById('project-table');
+            const developerTable = document.getElementById('developer-table');
+
+            if (!scrollContainer || !floatingHeader || !projectTable || !developerTable) {
+                return;
+            }
+
+            const projectWrapper = projectTable.parentElement;
+            const developerWrapper = developerTable.parentElement;
+            let currentActiveHeader = null;
+            let currentActiveWrapper = null;
+
+            function getOffsetTop(el) {
+                const containerRect = scrollContainer.getBoundingClientRect();
+                const elRect = el.getBoundingClientRect();
+                return elRect.top - containerRect.top + scrollContainer.scrollTop;
+            }
+
+            function setFloatingHeader(activeHeader, activeTable, activeWrapper) {
+                if (activeHeader === currentActiveHeader) {
+                    return;
+                }
+
+                const clone = activeHeader.cloneNode(true);
+                const tableClone = document.createElement('table');
+                tableClone.className = activeTable.className;
+                tableClone.style.cssText = activeTable.style.cssText;
+                tableClone.style.tableLayout = 'fixed';
+                tableClone.style.width = `${activeTable.scrollWidth}px`;
+                tableClone.appendChild(clone);
+
+                const inner = document.createElement('div');
+                inner.className = 'floating-header-inner';
+                inner.appendChild(tableClone);
+
+                floatingHeader.innerHTML = '';
+                floatingHeader.appendChild(inner);
+                floatingHeader.classList.add('active');
+
+                inner.scrollLeft = activeWrapper.scrollLeft;
+                requestAnimationFrame(() => {
+                    const sourceCells = activeHeader.querySelectorAll('th');
+                    const targetCells = clone.querySelectorAll('th');
+                    sourceCells.forEach((cell, index) => {
+                        const width = cell.getBoundingClientRect().width;
+                        if (targetCells[index]) {
+                            targetCells[index].style.width = `${width}px`;
+                            targetCells[index].style.minWidth = `${width}px`;
+                            targetCells[index].style.maxWidth = `${width}px`;
+                        }
+                    });
+                });
+                inner.addEventListener('scroll', () => {
+                    if (currentActiveWrapper) {
+                        currentActiveWrapper.scrollLeft = inner.scrollLeft;
+                    }
+                });
+                currentActiveHeader = activeHeader;
+                currentActiveWrapper = activeWrapper;
+            }
+
+            function clearFloatingHeader() {
+                floatingHeader.classList.remove('active');
+                floatingHeader.innerHTML = '';
+                currentActiveHeader = null;
+                currentActiveWrapper = null;
+            }
+
+            function updateFloatingHeader() {
+                const scrollTop = scrollContainer.scrollTop;
+                const headerHeight = projectThead.offsetHeight || 0;
+
+                const projectTop = getOffsetTop(projectTable);
+                const projectBottom = projectTop + projectTable.offsetHeight;
+
+                const developerTop = getOffsetTop(developerTable);
+                const developerBottom = developerTop + developerTable.offsetHeight;
+
+                const projectActive = scrollTop + headerHeight >= projectTop && scrollTop < projectBottom - headerHeight;
+                const developerActive = scrollTop + headerHeight >= developerTop && scrollTop < developerBottom - headerHeight;
+
+                if (projectActive) {
+                    setFloatingHeader(projectThead, projectTable, projectWrapper);
+                } else if (developerActive) {
+                    setFloatingHeader(developerThead, developerTable, developerWrapper);
+                } else {
+                    clearFloatingHeader();
+                }
+            }
+
+            scrollContainer.addEventListener('scroll', updateFloatingHeader);
+
+            projectWrapper.addEventListener('scroll', () => {
+                const inner = floatingHeader.querySelector('.floating-header-inner');
+                if (currentActiveWrapper === projectWrapper && inner) {
+                    inner.scrollLeft = projectWrapper.scrollLeft;
+                }
+            });
+
+            developerWrapper.addEventListener('scroll', () => {
+                const inner = floatingHeader.querySelector('.floating-header-inner');
+                if (currentActiveWrapper === developerWrapper && inner) {
+                    inner.scrollLeft = developerWrapper.scrollLeft;
+                }
+            });
+
+            updateFloatingHeader();
+        }
+
+        function generateBookmarkUrl(filename) {
+            // Store the current file info
+            localStorage.setItem('lastLoadedFile', filename);
+            localStorage.setItem('lastLoadedTime', Date.now());
+            
+            // Update the URL in the address bar
+            const newUrl = `${window.location.pathname}?upload=${encodeURIComponent(filename)}`;
+            window.history.replaceState({ file: filename }, '', newUrl);
+            
+            // Show a subtle notification
+            console.log(`URL updated: ${newUrl}`);
+        }
+
+        function copyBookmarkUrl() {
+            const filename = localStorage.getItem('lastLoadedFile');
+            if (!filename) {
+                alert('No file loaded yet');
+                return;
+            }
+            
+            const baseUrl = window.location.origin + window.location.pathname;
+            const bookmarkUrl = `${baseUrl}?upload="${encodeURIComponent(filename)}"`;
+            
+            navigator.clipboard.writeText(bookmarkUrl).then(() => {
+                const btn = document.getElementById('copy-bookmark-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="ph ph-check"></i> Copied!';
+                btn.classList.add('text-green-400');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('text-green-400');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                prompt('Copy this URL:', bookmarkUrl);
+            });
+        }
+
+        function getReloadButton() {
+            const lastFile = localStorage.getItem('lastLoadedFile');
+            const lastTime = localStorage.getItem('lastLoadedTime');
+            
+            if (lastFile && lastTime) {
+                const age = Date.now() - parseInt(lastTime);
+                // Show reload option if file was loaded within last 24 hours
+                if (age < 86400000) {
+                    const hint = document.createElement('div');
+                    hint.className = 'mt-4 text-center';
+                    hint.innerHTML = `
+                        <button onclick="reloadLastFile()" class="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-2 mx-auto">
+                            <i class="ph ph-clock-counter-clockwise"></i>
+                            <span>Reload: ${lastFile}</span>
+                        </button>
+                    `;
+                    dropZone.parentElement.appendChild(hint);
+                }
+            }
+        }
+
+        function reloadLastFile() {
+            const lastFile = localStorage.getItem('lastLoadedFile');
+            if (lastFile) {
+                loadCachedFile(lastFile);
+            }
+        }
+
+        // Show reload button if available
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(getReloadButton, 100);
+        });
+
+        function resetToUpload() {
+            // Clear the URL parameter
+            window.history.replaceState({}, '', window.location.pathname);
+            
+            // Clear any stored data
+            localStorage.removeItem('requestedFilePath');
+            
+            // Hide dashboard and show upload container
+            dashboardContainer.classList.add('hidden');
+            dashboardContainer.classList.add('opacity-0');
+            uploadContainer.style.display = 'block';
+            
+            // Reset drop zone text
+            const dropZoneText = dropZone.querySelector('p:last-child');
+            dropZoneText.innerHTML = 'Supports Excel (.xls, .xlsx) & CSV';
+            
+            // Destroy chart if exists
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+            
+            // Clear tables
+            projectTableHeaderRow.innerHTML = '';
+            projectTableBody.innerHTML = '';
+            tableHeaderRow.innerHTML = '';
+            tableBody.innerHTML = '';
+            
+            // Reset file input
+            fileInput.value = '';
         }
     </script>
 </body>

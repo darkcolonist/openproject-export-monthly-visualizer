@@ -12,6 +12,16 @@ The **Cost Report Visualizer** is a specialized, client-side web application des
 
 * **Developer Utilization Matrix:** A comprehensive data table displaying exact hour logs per developer, organized chronologically.
 
+* **Enhanced Table Navigation:**
+  * *Sticky Headers:* Month column headers remain fixed while scrolling vertically through data rows.
+  * *Fixed First Column:* Project/Developer names stay visible during horizontal scrolling.
+  * *Smart Sticky Behavior:* Headers automatically unstick when scrolling past their table section.
+
+* **Intelligent File Handling:**
+  * *URL Parameter Support:* Create bookmarkable URLs for quick access to specific reports.
+  * *Automatic Caching:* Files cached in IndexedDB for instant reload within 1 hour.
+  * *One-Click Reload:* Quickly restore previously loaded files without re-uploading.
+
 * **Dark Mode Interface:** A professional, high-contrast dark theme optimized for readability and extended usage.
 
 * **Smart Header Detection:** Algorithms automatically identify the correct data schema, bypassing metadata rows often found in exported reports.
@@ -31,11 +41,43 @@ The application is engineered to parse standard Cost Reports exported in `.xls`,
 
 ## Usage Guide
 
+### Standard Workflow
+
 1. **Deployment:** Save the provided `index.html` file to a local directory.
 2. **Launch:** Open the file using any standard web browser (Google Chrome, Microsoft Edge, Firefox, or Safari).
 3. **Data Ingestion:** Drag and drop the target Cost Report file into the designated upload area.
 4. **Analysis:** The dashboard will render immediately upon successful file parsing.
 5. **Export:** Select "Save Image" to export the visual data for external reporting.
+
+### Advanced Features
+
+#### Quick Reload with URL Parameters
+
+Create bookmarkable URLs for frequently analyzed reports:
+
+```
+file:///path/to/index.html?upload="filename.xls"
+```
+
+**Example:**
+```
+file:///D:/_gits/dc.openproject-export-monthly-visualizer/index.html?upload="cost-report-2026-01-28.xls"
+```
+
+**How it works:**
+1. Load a file normally (drag & drop or click to upload)
+2. Click "Copy Bookmark URL" button in the footer
+3. Paste and save the URL as a browser bookmark
+4. Next time you open the bookmark:
+   - If the file was cached (within 1 hour), it loads automatically
+   - Otherwise, the application highlights the expected filename for easy selection
+
+#### Automatic File Caching
+
+- Files are automatically cached in browser storage (IndexedDB)
+- Cached files remain valid for 1 hour
+- Enables instant reload without re-uploading
+- Click "Reload: [filename]" button when available to restore the last loaded file
 
 ## Technical Architecture
 
