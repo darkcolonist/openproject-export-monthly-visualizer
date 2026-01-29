@@ -97,6 +97,7 @@
         .floating-header-inner {
             overflow-x: auto;
             overflow-y: hidden;
+            margin: 0 2rem;
         }
         
         .floating-sticky-header table {
@@ -798,6 +799,8 @@
                 const tableClone = document.createElement('table');
                 tableClone.className = activeTable.className;
                 tableClone.style.cssText = activeTable.style.cssText;
+                tableClone.style.tableLayout = 'fixed';
+                tableClone.style.width = `${activeTable.scrollWidth}px`;
                 tableClone.appendChild(clone);
 
                 const inner = document.createElement('div');
@@ -809,6 +812,18 @@
                 floatingHeader.classList.add('active');
 
                 inner.scrollLeft = activeWrapper.scrollLeft;
+                requestAnimationFrame(() => {
+                    const sourceCells = activeHeader.querySelectorAll('th');
+                    const targetCells = clone.querySelectorAll('th');
+                    sourceCells.forEach((cell, index) => {
+                        const width = cell.getBoundingClientRect().width;
+                        if (targetCells[index]) {
+                            targetCells[index].style.width = `${width}px`;
+                            targetCells[index].style.minWidth = `${width}px`;
+                            targetCells[index].style.maxWidth = `${width}px`;
+                        }
+                    });
+                });
                 inner.addEventListener('scroll', () => {
                     if (currentActiveWrapper) {
                         currentActiveWrapper.scrollLeft = inner.scrollLeft;
