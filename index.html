@@ -57,10 +57,16 @@
                 <p class="text-xs text-slate-400">Project Trends & Developer Breakdown</p>
             </div>
         </div>
-        <a href="/"
-            class="text-sm font-medium text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-2">
-            <i class="ph ph-arrow-counter-clockwise"></i> New File
-        </a>
+        <div class="flex items-center gap-6">
+            <button onclick="toggleChart()" id="toggle-chart-btn"
+                class="hidden text-xs font-medium text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 hover:bg-slate-700 transition-colors">
+                <i class="ph ph-caret-up"></i> Hide Graph
+            </button>
+            <a href="/"
+                class="text-sm font-medium text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-2">
+                <i class="ph ph-arrow-counter-clockwise"></i> New File
+            </a>
+        </div>
     </header>
 
     <!-- Main Content -->
@@ -124,10 +130,6 @@
                                 class="font-bold text-blue-400">Project</span></p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button onclick="toggleChart()" id="toggle-chart-btn"
-                            class="text-xs font-medium text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 hover:bg-slate-700 transition-colors">
-                            <i class="ph ph-caret-up"></i> Collapse
-                        </button>
                         <button onclick="downloadChart()"
                             class="text-xs font-medium text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 hover:bg-slate-700 transition-colors">
                             <i class="ph ph-download-simple"></i> Save Image
@@ -200,14 +202,14 @@
                 </div>
 
                 <!-- Developer Insights Section -->
-                <div id="insights-section" class="flex flex-col p-0 overflow-hidden shrink-0 table-section mb-20">
+                <div id="insights-section" class="flex flex-col p-0 overflow-hidden shrink-0 table-section mb-10">
                     <div class="p-4 bg-slate-950 shrink-0 flex justify-between items-center">
                         <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2 px-4">
                             <i class="ph ph-chart-bar text-blue-400"></i> Developer Project Insights
                         </h3>
                     </div>
 
-                    <div class="px-8 pb-20">
+                    <div class="px-8">
                         <div class="bg-slate-900 rounded-xl border border-slate-800 p-6">
 
                             <!-- Controls -->

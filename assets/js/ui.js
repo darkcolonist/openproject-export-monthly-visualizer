@@ -19,6 +19,12 @@ App.resetToUpload = function resetToUpload() {
         dashboardContainer.classList.add('hidden');
         dashboardContainer.classList.add('opacity-0');
     }
+    if (App.elements.toggleChartBtn) {
+        App.elements.toggleChartBtn.classList.add('hidden');
+    }
+    if (App.elements.chartSection) {
+        App.elements.chartSection.classList.remove('collapsed');
+    }
     if (uploadContainer) {
         uploadContainer.style.display = 'block';
     }

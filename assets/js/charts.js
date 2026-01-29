@@ -87,17 +87,15 @@ App.downloadChart = function downloadChart() {
 };
 
 App.toggleChart = function toggleChart() {
-    const { chartContent, toggleChartBtn } = App.elements;
-    if (!chartContent || !toggleChartBtn) return;
+    const { chartSection, toggleChartBtn } = App.elements;
+    if (!chartSection || !toggleChartBtn) return;
 
-    if (chartContent.classList.contains('h-0')) {
-        chartContent.classList.remove('h-0');
-        chartContent.classList.add('h-80');
-        toggleChartBtn.innerHTML = '<i class="ph ph-caret-up"></i> Collapse';
+    if (chartSection.classList.contains('collapsed')) {
+        chartSection.classList.remove('collapsed');
+        toggleChartBtn.innerHTML = '<i class="ph ph-caret-up"></i> Hide Graph';
     } else {
-        chartContent.classList.remove('h-80');
-        chartContent.classList.add('h-0');
-        toggleChartBtn.innerHTML = '<i class="ph ph-caret-down"></i> Expand';
+        chartSection.classList.add('collapsed');
+        toggleChartBtn.innerHTML = '<i class="ph ph-caret-down"></i> Show Graph';
     }
 };
 

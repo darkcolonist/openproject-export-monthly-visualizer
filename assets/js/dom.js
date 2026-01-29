@@ -11,6 +11,7 @@ App.cacheDom = function cacheDom() {
         tableBody: document.getElementById('table-body'),
         projectTableHeaderRow: document.getElementById('project-table-header-row'),
         projectTableBody: document.getElementById('project-table-body'),
+        chartSection: document.getElementById('chart-section'),
         chartContent: document.getElementById('chart-content'),
         toggleChartBtn: document.getElementById('toggle-chart-btn'),
         chartCanvas: document.getElementById('myChart'),

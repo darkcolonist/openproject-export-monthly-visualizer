@@ -143,13 +143,16 @@ App.handleFile = function handleFile(file, skipCache = false) {
                 return totalB - totalA;
             });
 
-            const { uploadContainer, dashboardContainer, fileInfo } = App.elements;
+            const { uploadContainer, dashboardContainer, fileInfo, toggleChartBtn } = App.elements;
             if (uploadContainer) {
                 uploadContainer.style.display = 'none';
             }
             if (dashboardContainer) {
                 dashboardContainer.classList.remove('hidden');
                 setTimeout(() => dashboardContainer.classList.remove('opacity-0'), 50);
+            }
+            if (toggleChartBtn) {
+                toggleChartBtn.classList.remove('hidden');
             }
             if (fileInfo) {
                 fileInfo.textContent = `Source: ${file.name} | ${sortedMonthKeys.length} Months Found`;
