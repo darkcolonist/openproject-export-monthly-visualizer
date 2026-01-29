@@ -102,3 +102,61 @@ App.showConfirm = function showConfirm(message, onConfirm) {
         }
     };
 };
+
+App.showErrorModal = function showErrorModal(title, message) {
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]';
+    
+    // Create modal container
+    const modal = document.createElement('div');
+    modal.className = 'bg-slate-900 rounded-xl border border-slate-700 p-6 max-w-md mx-4 shadow-2xl';
+    
+    // Create title
+    const titleEl = document.createElement('h3');
+    titleEl.className = 'text-xl font-bold text-red-400 mb-4 text-center flex items-center justify-center gap-2';
+    titleEl.innerHTML = `<i class="ph ph-warning-circle text-2xl"></i> ${title}`;
+    
+    // Create modal content
+    const messageEl = document.createElement('p');
+    messageEl.className = 'text-slate-300 mb-6 text-center leading-relaxed';
+    messageEl.textContent = message;
+    
+    // Create buttons container
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'flex gap-3 justify-center';
+    
+    // OK button
+    const okBtn = document.createElement('button');
+    okBtn.className = 'px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors font-medium';
+    okBtn.textContent = 'OK';
+    okBtn.onclick = () => {
+        document.body.removeChild(overlay);
+    };
+    
+    // Assemble modal
+    buttonsContainer.appendChild(okBtn);
+    modal.appendChild(titleEl);
+    modal.appendChild(messageEl);
+    modal.appendChild(buttonsContainer);
+    overlay.appendChild(modal);
+    
+    // Add to body
+    document.body.appendChild(overlay);
+    
+    // Close on overlay click
+    overlay.onclick = (e) => {
+        if (e.target === overlay) {
+            document.body.removeChild(overlay);
+        }
+    };
+    
+    // Close on Escape key
+    const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+            document.body.removeChild(overlay);
+            document.removeEventListener('keydown', handleEscape);
+        }
+    };
+    document.addEventListener('keydown', handleEscape);
+};

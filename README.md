@@ -27,6 +27,8 @@ The **Cost Report Visualizer** is a specialized, client-side web application des
   * *Recently Uploaded Files:* Visual list showing cached files with row counts and upload timestamps.
   * *One-Click Reload:* Load any cached file instantly from the upload page.
   * *Cache Management:* Clear all cached files with a single click and confirmation.
+  * *File Validation:* Automatic detection of invalid file formats with clear error messages and a downloadable sample template.
+  * *Smart Cache Prevention:* Invalid files are rejected before caching to maintain data integrity.
 
 * **Dark Mode Interface:** A professional, high-contrast dark theme optimized for readability and extended usage.
 
@@ -50,6 +52,8 @@ The application is engineered to parse standard Cost Reports exported in `.xls`,
 | **User** | Identifier for the developer resource, used for the utilization matrix. |
 | **Project** | Grouping key for the stacked chart segments. |
 | **Units** | Numerical value representing the billable hours. |
+
+**File Validation:** The application validates uploaded files to ensure they contain the required columns and valid data. If a file doesn't match the expected format, an error message will be displayed with instructions. A sample template file (`sample-template.csv`) is available for download on the upload page to help you structure your data correctly.
 
 ## Usage Guide
 

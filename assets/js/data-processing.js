@@ -20,11 +20,6 @@ App.handleFile = function handleFile(file, skipCache = false) {
 
             const jsonData = XLSX.utils.sheet_to_json(firstSheet, { range: headerIndex, defval: "" });
             if (!jsonData.length) { alert("No valid data found."); return; }
-            
-            // Cache file with row count
-            if (!skipCache) {
-                App.cacheFile(file, e.target.result, jsonData.length);
-            }
 
             const monthMap = {};
             const userMap = {};
@@ -85,6 +80,24 @@ App.handleFile = function handleFile(file, skipCache = false) {
 
             const sortedMonthKeys = Array.from(allMonthsSet).sort();
             const monthLabels = sortedMonthKeys.map(k => monthMap[k]);
+
+            // Validation: Check if we have valid data
+            const hasProjects = allProjectsSet.size > 0;
+            const hasDevelopers = allUsersSet.size > 0;
+            const hasMonths = allMonthsSet.size > 0;
+            
+            if (!hasProjects || !hasDevelopers || !hasMonths) {
+                App.showErrorModal(
+                    'Invalid File Format',
+                    `The file "${file.name}" does not match the expected format. Please ensure your file contains the required columns: Date, User, Units, and Project. Download the sample template below for reference.`
+                );
+                return;
+            }
+
+            // Cache file with row count (only if validation passes)
+            if (!skipCache) {
+                App.cacheFile(file, e.target.result, jsonData.length);
+            }
 
             const projectsList = Array.from(allProjectsSet).sort();
             const activeProjects = projectsList.filter(proj => {
