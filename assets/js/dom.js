@@ -20,6 +20,11 @@ App.cacheDom = function cacheDom() {
         developerThead: document.getElementById('developer-thead'),
         projectTable: document.getElementById('project-table'),
         developerTable: document.getElementById('developer-table'),
-        copyBookmarkBtn: document.getElementById('copy-bookmark-btn')
+        copyBookmarkBtn: document.getElementById('copy-bookmark-btn'),
+        // Insight Elements
+        insightDevSelect: document.getElementById('insight-dev-select'),
+        insightProjSelect: document.getElementById('insight-proj-select'),
+        developerChartCanvas: document.getElementById('developerChart'),
+        insightPlaceholder: document.getElementById('insight-placeholder')
     };
 };

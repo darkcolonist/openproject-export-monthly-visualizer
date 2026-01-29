@@ -16,6 +16,12 @@ The **Cost Report Visualizer** is a specialized, client-side web application des
 
 * **Developer Utilization Matrix:** A comprehensive data table displaying exact hour logs per developer, organized chronologically.
 
+* **Developer Project Insights:** An interactive dashboard section for deep-dive analysis of individual contributions.
+  * *Resource Selection:* Filter data by specific developer to see their multi-month workload trends.
+  * *Project-Specific Drilling:* Narrow down any developer's view to a single project or view their stacked contribution across all projects.
+  * *Instant Hour Totals:* Dropdown selectors display real-time total hour counts for both developers and projects.
+  * *Smart Tooltip Filtering:* Monthly breakdown tooltips automatically hide zero-hour projects for the selected developer.
+
 * **Enhanced Table Navigation:**
   * *Floating Sticky Headers:* Active table headers stay visible while their table section is in view.
   * *Horizontal Scroll + Fixed First Column:* Project/Developer names stay visible during horizontal scrolling.
@@ -36,7 +42,7 @@ The **Cost Report Visualizer** is a specialized, client-side web application des
 
 * **High-Resolution Export:** One-click functionality to render and download charts as PNG files for presentation decks.
 
-* **Dashboard Controls:** Collapse/expand the chart and use floating navigation buttons to jump between sections.
+* **Dashboard Controls:** Collapse/expand the chart and use floating navigation buttons to jump between sections (Trends, Projects, Developers, Insights).
 
 * **Open Source Integration:**
   * *GitHub Links:* Quick access to the source repository from both the dashboard footer and upload page.

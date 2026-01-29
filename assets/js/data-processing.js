@@ -28,6 +28,8 @@ App.handleFile = function handleFile(file, skipCache = false) {
             const allProjectsSet = new Set();
             const allMonthsSet = new Set();
 
+            const detailedMap = {}; // New detailed structure
+
             jsonData.forEach(row => {
                 const dateKey = Object.keys(row).find(k => k.trim().toLowerCase().includes('date'));
                 const userKey = Object.keys(row).find(k => k.trim().toLowerCase() === 'user');
@@ -44,6 +46,7 @@ App.handleFile = function handleFile(file, skipCache = false) {
                         let monthKey = "";
                         let monthLabel = "";
 
+                        // ... Date parsing logic existing ... 
                         if (typeof dateVal === 'number') {
                             const dateObj = XLSX.SSF.parse_date_code(dateVal);
                             const mm = String(dateObj.m).padStart(2, '0');
@@ -57,13 +60,14 @@ App.handleFile = function handleFile(file, skipCache = false) {
                                     monthKey = `${d.getFullYear()}-${mm}`;
                                     monthLabel = d.toLocaleString('en-US', { month: 'short', year: 'numeric' });
                                 }
-                            } catch (e) {}
+                            } catch (e) { }
                         }
 
                         if (monthKey) {
                             allMonthsSet.add(monthKey);
                             monthMap[monthKey] = monthLabel;
 
+                            // Standard Aggregations
                             allUsersSet.add(user);
                             if (!userMap[user]) userMap[user] = {};
                             if (!userMap[user][monthKey]) userMap[user][monthKey] = 0;
@@ -73,10 +77,19 @@ App.handleFile = function handleFile(file, skipCache = false) {
                             if (!projectMap[project]) projectMap[project] = {};
                             if (!projectMap[project][monthKey]) projectMap[project][monthKey] = 0;
                             projectMap[project][monthKey] += hours;
+
+                            // Detailed Map Building for Insights
+                            if (!detailedMap[user]) detailedMap[user] = {};
+                            if (!detailedMap[user][project]) detailedMap[user][project] = {};
+                            if (!detailedMap[user][project][monthKey]) detailedMap[user][project][monthKey] = 0;
+                            detailedMap[user][project][monthKey] += hours;
                         }
                     }
                 }
             });
+
+            // Save to state
+            App.state.detailedMap = detailedMap;
 
             const sortedMonthKeys = Array.from(allMonthsSet).sort();
             const monthLabels = sortedMonthKeys.map(k => monthMap[k]);
@@ -85,7 +98,7 @@ App.handleFile = function handleFile(file, skipCache = false) {
             const hasProjects = allProjectsSet.size > 0;
             const hasDevelopers = allUsersSet.size > 0;
             const hasMonths = allMonthsSet.size > 0;
-            
+
             if (!hasProjects || !hasDevelopers || !hasMonths) {
                 App.showErrorModal(
                     'Invalid File Format',
@@ -145,6 +158,9 @@ App.handleFile = function handleFile(file, skipCache = false) {
             App.renderStackedChart(monthLabels, chartDatasets);
             App.renderProjectTable(sortedMonthKeys, monthLabels, activeProjects, projectMap);
             App.renderTable(sortedMonthKeys, monthLabels, usersList, userMap);
+
+            // Populate Insights
+            App.populateInsightControls(usersList, detailedMap);
 
             setTimeout(() => App.initializeStickyHeaders(), 100);
             App.generateBookmarkUrl(file.name);
