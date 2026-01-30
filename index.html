@@ -21,6 +21,10 @@
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
+    <!-- Air Datepicker (Beautiful Month Range Picker) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/air-datepicker/air-datepicker.css">
+    <script src="https://cdn.jsdelivr.net/npm/air-datepicker/air-datepicker.js"></script>
+
     <link rel="stylesheet" href="assets/css/app.css">
 
     <script>
@@ -57,6 +61,24 @@
                 <p class="text-xs text-slate-400">Project Trends & Developer Breakdown</p>
             </div>
         </div>
+
+        <!-- Date Filter Trigger (Hidden initially) -->
+        <div id="header-date-filter" class="hidden md:flex items-center transition-all opacity-0">
+            <button id="date-filter-trigger"
+                class="flex items-center gap-3 bg-slate-800/50 hover:bg-slate-700/50 px-5 py-2.5 rounded-2xl border border-slate-700/50 transition-all hover:scale-[1.02] active:scale-95 group">
+                <div
+                    class="bg-blue-500/10 text-blue-400 p-1.5 rounded-lg border border-blue-500/20 group-hover:bg-blue-500/20 transition-colors">
+                    <i class="ph ph-calendar text-lg"></i>
+                </div>
+                <div class="flex flex-col items-start">
+                    <span class="text-[9px] uppercase tracking-widest text-slate-500 font-bold leading-none mb-1">Date
+                        Range</span>
+                    <span id="date-range-display" class="text-sm text-slate-200 font-medium">Showing everything</span>
+                </div>
+                <i class="ph ph-caret-down text-slate-500 ml-2 group-hover:text-slate-300 transition-colors"></i>
+            </button>
+        </div>
+
         <div class="flex items-center gap-6">
             <button onclick="toggleChart()" id="toggle-chart-btn"
                 class="hidden text-xs font-medium text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 hover:bg-slate-700 transition-colors">
@@ -314,6 +336,7 @@
     <script src="assets/js/tables.js" defer></script>
     <script src="assets/js/charts.js" defer></script>
     <script src="assets/js/scroll.js" defer></script>
+    <script src="assets/js/date-picker.js" defer></script>
     <script src="assets/js/data-processing.js" defer></script>
     <script src="assets/js/ui.js" defer></script>
     <script src="assets/js/boot.js" defer></script>

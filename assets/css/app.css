@@ -249,3 +249,123 @@ body {
 .modal-list-item:last-child {
     border-bottom: none;
 }
+
+/* Date Filter Styling */
+#header-date-filter input[type="month"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.5) sepia(1) saturate(5) hue-rotate(175deg);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+#header-date-filter input[type="month"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+#header-date-filter input[type="month"] {
+    position: relative;
+}
+
+/* Ensure the text is readable and aligned */
+#header-date-filter input[type="month"]::-webkit-datetime-edit {
+    display: flex;
+}
+
+#header-date-filter input[type="month"]::-webkit-datetime-edit-fields-wrapper {
+    padding: 0;
+}
+
+/* For browsers that don't support month well, ensure it's still usable */
+#header-date-filter input:focus {
+    outline: none;
+}
+
+#date-range-display.text-blue-400 {
+    color: #60a5fa !important;
+    font-weight: 600;
+}
+
+.modal-container.max-w-sm {
+    max-width: 24rem;
+}
+
+select {
+    cursor: pointer;
+}
+
+/* Air Datepicker Customization */
+.air-datepicker {
+    --adp-background-color: #0f172a;
+    --adp-color: #94a3b8;
+    --adp-accent-color: #3b82f6;
+    --adp-color-secondary: #64748b;
+    --adp-border-color: #1e293b;
+    --adp-border-color-inner: #1e293b;
+    --adp-cell-background-color-selected: #3b82f6;
+    --adp-cell-background-color-selected-hover: #2563eb;
+    --adp-cell-background-color-in-range: rgba(59, 130, 246, 0.15);
+    --adp-cell-background-color-in-range-hover: rgba(59, 130, 246, 0.25);
+    --adp-day-name-color: #3b82f6;
+
+    font-family: inherit;
+    border: none !important;
+    background: transparent !important;
+    width: 100% !important;
+}
+
+.air-datepicker-cell.-month- {
+    height: auto !important;
+    border-radius: 0 !important;
+    font-weight: 500;
+    font-size: 13px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    margin: 0 !important;
+}
+
+.air-datepicker-body--cells.-months- {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    grid-gap: 0 !important;
+}
+
+.air-datepicker-cell.-disabled- {
+    opacity: 0.15 !important;
+    text-decoration: line-through;
+}
+
+.air-datepicker-cell.-range-from- {
+    border-radius: 12px 0 0 12px !important;
+    background: var(--adp-cell-background-color-selected) !important;
+}
+
+.air-datepicker-cell.-range-to- {
+    border-radius: 0 12px 12px 0 !important;
+    background: var(--adp-cell-background-color-selected) !important;
+}
+
+/* Individual month (not range) should be fully rounded */
+.air-datepicker-cell.-selected-.-range-from-.-range-to- {
+    border-radius: 12px !important;
+}
+
+.air-datepicker-nav--title,
+.air-datepicker-nav--title i {
+    color: #f1f5f9 !important;
+    font-weight: 700 !important;
+}
+
+.air-datepicker-nav--action:hover {
+    background: #1e293b !important;
+}
+
+.air-datepicker-cell.-current- {
+    color: #3b82f6 !important;
+    font-weight: 700;
+}
+
+.air-datepicker-cell.-selected- {
+    color: white !important;
+    font-weight: 700;
+}

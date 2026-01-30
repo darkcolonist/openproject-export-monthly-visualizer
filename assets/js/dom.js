@@ -30,7 +30,11 @@ App.cacheDom = function cacheDom() {
         developerLegend: document.getElementById('developer-legend'),
         insightPlaceholder: document.getElementById('insight-placeholder'),
         floatingNav: document.getElementById('floating-nav'),
-        navButtons: document.querySelectorAll('.nav-btn')
+        navButtons: document.querySelectorAll('.nav-btn'),
+        // Date Filter Elements
+        headerDateFilter: document.getElementById('header-date-filter'),
+        dateFilterTrigger: document.getElementById('date-filter-trigger'),
+        dateRangeDisplay: document.getElementById('date-range-display')
     };
 };
 

@@ -25,6 +25,10 @@ App.resetToUpload = function resetToUpload() {
     if (App.elements.chartSection) {
         App.elements.chartSection.classList.remove('collapsed');
     }
+    if (App.elements.headerDateFilter) {
+        App.elements.headerDateFilter.classList.add('hidden');
+        App.elements.headerDateFilter.classList.add('opacity-0');
+    }
     if (uploadContainer) {
         uploadContainer.style.display = 'block';
     }
