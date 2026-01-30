@@ -96,22 +96,20 @@ App.showDateFilterModal = function () {
         minDate: minDate,
         maxDate: maxDate,
         onSelect({ date }) {
-            // Handle both single date and array of dates
             const dates = Array.isArray(date) ? date : (date ? [date] : []);
-
             const formatted = (d) => d.toLocaleString('en-US', { month: 'short', year: 'numeric' });
 
-            if (dates.length === 2) {
+            if (dates.length >= 1) {
                 applyBtn.disabled = false;
-                previewText.innerHTML = `<span class="text-blue-400 font-bold">${formatted(dates[0])}</span> <span class="text-slate-600">to</span> <span class="text-blue-400 font-bold">${formatted(dates[1])}</span>`;
+                if (dates.length === 2) {
+                    previewText.innerHTML = `<span class="text-blue-400 font-bold">${formatted(dates[0])}</span> <span class="text-slate-600">to</span> <span class="text-blue-400 font-bold">${formatted(dates[1])}</span>`;
+                } else {
+                    previewText.innerHTML = `Single month: <span class="text-blue-400 font-bold">${formatted(dates[0])}</span>`;
+                }
                 previewText.classList.remove('italic');
-            } else if (dates.length === 1) {
-                applyBtn.disabled = true;
-                previewText.textContent = `Select end month after ${formatted(dates[0])}...`;
-                previewText.classList.add('italic');
             } else {
                 applyBtn.disabled = true;
-                previewText.textContent = 'Select two months to define a range';
+                previewText.textContent = 'Select a month to define a range';
                 previewText.classList.add('italic');
             }
         }
@@ -119,16 +117,16 @@ App.showDateFilterModal = function () {
 
     applyBtn.onclick = () => {
         const selected = datepicker.selectedDates;
-        if (selected.length === 2) {
-            // Ensure first is start, second is end (Air Datepicker usually sorts them, but just in case)
+        if (selected.length >= 1) {
             const sorted = [...selected].sort((a, b) => a - b);
             const formatDate = (d) => {
                 const y = d.getFullYear();
                 const m = String(d.getMonth() + 1).padStart(2, '0');
                 return `${y}-${m}`;
             };
+
             App.state.startDate = formatDate(sorted[0]);
-            App.state.endDate = formatDate(sorted[1]);
+            App.state.endDate = formatDate(sorted[selected.length - 1]);
             overlay.remove();
             App.processAndRender();
         }
