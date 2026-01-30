@@ -78,33 +78,37 @@ App.renderLegend = function renderLegend(datasets, container, contextType = 'glo
     // Process datasets to identify "Other" projects
     const processedDatasets = datasets.map(ds => ({
         ...ds,
-        isOther: ds.backgroundColor === '#64748b' || (App.state.projectColorMap && App.state.projectColorMap[ds.label] === '#64748b')
+        isOther: ds.isOther || ds.backgroundColor === '#64748b',
+        totalHours: ds.data.reduce((a, b) => a + b, 0)
     }));
 
     const mainDatasets = processedDatasets.filter(ds => !ds.isOther);
     const otherDatasets = processedDatasets.filter(ds => ds.isOther);
 
-    // 1. Render Main Projects
+    // 1. Render Main Projects (Sorted by hours)
+    mainDatasets.sort((a, b) => b.totalHours - a.totalHours);
+
     mainDatasets.forEach(ds => {
         const item = document.createElement('div');
         item.className = 'legend-item';
-        item.innerHTML = `<div class="legend-color" style="background-color: ${ds.backgroundColor}"></div><span>${ds.label}</span>`;
+        item.innerHTML = `<div class="legend-color" style="background-color: ${ds.backgroundColor}"></div><span>${ds.label} <span class="text-slate-500 text-[10px] ml-1">(${ds.totalHours.toFixed(1)} h)</span></span>`;
         container.appendChild(item);
     });
 
     // 2. Render "Others" Pill with context
     if (otherDatasets.length > 0) {
+        const totalOthersHours = otherDatasets.reduce((sum, ds) => sum + ds.totalHours, 0);
         const item = document.createElement('div');
         item.className = 'legend-item others';
         item.title = 'Click to see details';
-        item.innerHTML = `<div class="legend-color" style="background-color: #64748b"></div><span>Others (${otherDatasets.length} projects)</span>`;
+        item.innerHTML = `<div class="legend-color" style="background-color: #64748b"></div><span>Others (${otherDatasets.length}) <span class="text-slate-500 text-[10px] ml-1">(${totalOthersHours.toFixed(1)} h)</span></span>`;
 
         item.onclick = (e) => {
             e.stopPropagation();
             // Pass the context: which projects to show and their data
             const otherProjectsData = otherDatasets.map(ds => ({
                 name: ds.label,
-                totalHours: ds.data.reduce((a, b) => a + b, 0)
+                totalHours: ds.totalHours
             })).sort((a, b) => b.totalHours - a.totalHours);
 
             App.showOthersModal(otherProjectsData, contextType === 'global' ? 'All Projects' : 'Developer Projects');
@@ -209,12 +213,29 @@ App.renderDeveloperChart = function renderDeveloperChart(developer, projectFilte
 
     const devData = detailedMap[developer] || {};
 
+    // Calculate total hours per project for this developer to determine "Main" vs "Others"
+    const devProjectsSorted = Object.keys(devData).map(p => {
+        const total = Object.values(devData[p]).reduce((a, b) => a + b, 0);
+        return { name: p, total };
+    }).sort((a, b) => b.total - a.total);
+
     // Determine Projects to show
     let projectsToShow = [];
+    let mainProjectsForDev = [];
+
     if (projectFilter && projectFilter !== 'all') {
-        if (devData[projectFilter]) projectsToShow = [projectFilter];
+        if (devData[projectFilter]) {
+            projectsToShow = [projectFilter];
+            mainProjectsForDev = [projectFilter];
+        }
     } else {
-        projectsToShow = Object.keys(devData).sort();
+        projectsToShow = devProjectsSorted.map(p => p.name);
+        // Combine into "Others" only if project count > 10
+        if (projectsToShow.length > 10) {
+            mainProjectsForDev = projectsToShow.slice(0, 9);
+        } else {
+            mainProjectsForDev = projectsToShow;
+        }
     }
 
     // Determine Months (Union of all months for this developer)
@@ -232,18 +253,30 @@ App.renderDeveloperChart = function renderDeveloperChart(developer, projectFilte
     });
 
     // Build Datasets
-    const datasets = projectsToShow.map((proj) => {
+    const datasets = projectsToShow.map((proj, idx) => {
         const dataPoints = sortedMonthKeys.map(mKey => devData[proj][mKey] || 0);
+        const isMain = mainProjectsForDev.includes(proj);
 
-        // Use global project color mapping for consistency
-        const color = (App.state.projectColorMap && App.state.projectColorMap[proj])
+        // Determine color:
+        // 1. If it's an "Other" project for this dev, use gray.
+        // 2. Otherwise, try to use global color.
+        // 3. if global color is gray (because it's Other globally) but it's Main for this dev, give it a real color.
+        let color = (App.state.projectColorMap && App.state.projectColorMap[proj])
             ? App.state.projectColorMap[proj]
-            : App.utils.getColor(0);
+            : App.utils.getColor(idx);
+
+        if (!isMain) {
+            color = '#64748b'; // Gray for Others
+        } else if (color === '#64748b') {
+            // It's Main for this developer, so give it a real color even if it's "Other" globally
+            color = App.utils.getColor(idx);
+        }
 
         return {
             label: proj,
             data: dataPoints,
             backgroundColor: color,
+            isOther: !isMain,
             borderWidth: 0,
             borderRadius: 2,
             barPercentage: 0.6
