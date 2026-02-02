@@ -54,6 +54,50 @@ App.supabase = {
         }
     },
 
+    async fetchDataCount() {
+        const { url, key, tableName, startDate, endDate } = this.config;
+        if (!url || !key) return 0;
+
+        try {
+            // Build URL with filters but limit 0 to just get headers/count
+            let fetchUrl = `${url}/rest/v1/${tableName}?limit=0`;
+
+            if (startDate && endDate) {
+                fetchUrl += `&date_spent=gte.${startDate}-01`;
+                const [y, m] = endDate.split('-');
+                const lastDay = new Date(parseInt(y), parseInt(m), 0).getDate();
+                fetchUrl += `&date_spent=lte.${y}-${m}-${lastDay}`;
+            } else {
+                const today = new Date();
+                const threeMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+                const isoDate = threeMonthsAgo.toISOString().split('T')[0];
+                fetchUrl += `&date_spent=gte.${isoDate}`;
+            }
+
+            const response = await fetch(fetchUrl, {
+                method: 'GET',
+                headers: {
+                    'apikey': key,
+                    'Authorization': `Bearer ${key}`,
+                    'Prefer': 'count=exact'
+                }
+            });
+
+            if (!response.ok) return 0;
+
+            const contentRange = response.headers.get('content-range');
+            if (contentRange) {
+                // Format: 0-0/1234
+                const count = contentRange.split('/')[1];
+                return parseInt(count) || 0;
+            }
+            return 0;
+        } catch (err) {
+            console.error('Supabase count error:', err);
+            return 0;
+        }
+    },
+
     async sync() {
         const { url, key } = this.config;
         if (!url || !key) {

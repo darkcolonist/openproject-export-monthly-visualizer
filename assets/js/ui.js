@@ -263,6 +263,16 @@ App.showSupabaseModal = function () {
         if (App.supabase.config.url) supabaseUrlInput.value = App.supabase.config.url;
         if (App.supabase.config.key) supabaseKeyInput.value = App.supabase.config.key;
 
+        // Add listeners for URL/Key changes to refresh count
+        if (supabaseUrlInput && !supabaseUrlInput.hasListener) {
+            supabaseUrlInput.addEventListener('input', App.refreshSupabaseCount);
+            supabaseUrlInput.hasListener = true;
+        }
+        if (supabaseKeyInput && !supabaseKeyInput.hasListener) {
+            supabaseKeyInput.addEventListener('input', App.refreshSupabaseCount);
+            supabaseKeyInput.hasListener = true;
+        }
+
         // Hide warning by default
         if (App.elements.supabaseWarning) App.elements.supabaseWarning.classList.add('hidden');
 
@@ -351,6 +361,101 @@ App.updateSupabaseDateRangeDisplay = function () {
         supabaseDateRangeText.classList.add('text-blue-400');
         supabaseDateRangeText.classList.remove('text-slate-400');
     }
+
+    App.refreshSupabaseCount();
+};
+
+App.refreshSupabaseCount = async function () {
+    const {
+        supabaseRowCount,
+        supabaseCountValue,
+        supabaseUrlInput,
+        supabaseKeyInput,
+        supabaseRowLimitText
+    } = App.elements;
+    if (!supabaseRowCount || !supabaseCountValue) return;
+
+    // Use values from inputs if they are filled, otherwise from config
+    const url = supabaseUrlInput.value || App.supabase.config.url;
+    const key = supabaseKeyInput.value || App.supabase.config.key;
+
+    if (!url || !key) {
+        supabaseRowCount.classList.add('hidden');
+        if (supabaseRowLimitText) {
+            supabaseRowLimitText.parentElement.classList.remove('text-red-400');
+            supabaseRowLimitText.parentElement.classList.add('text-blue-400');
+        }
+        return;
+    }
+
+    // Temporary update state
+    supabaseRowCount.classList.remove('hidden');
+    supabaseCountValue.textContent = 'Calculating...';
+    supabaseCountValue.classList.remove('text-red-400', 'text-green-400');
+    supabaseCountValue.classList.add('text-slate-500');
+
+    // Debounce slightly to avoid hammer
+    if (App._countTimeout) clearTimeout(App._countTimeout);
+    App._countTimeout = setTimeout(async () => {
+        try {
+            // Temporarily sync inputs to config for count fetch
+            const oldUrl = App.supabase.config.url;
+            const oldKey = App.supabase.config.key;
+            App.supabase.config.url = url;
+            App.supabase.config.key = key;
+
+            const count = await App.supabase.fetchDataCount();
+
+            // Restore
+            App.supabase.config.url = oldUrl;
+            App.supabase.config.key = oldKey;
+
+            supabaseCountValue.textContent = `${count.toLocaleString()} rows`;
+            supabaseCountValue.classList.remove('text-slate-500');
+
+            if (count >= 1000) {
+                supabaseCountValue.classList.add('text-red-400');
+                supabaseCountValue.classList.remove('text-green-400');
+
+                if (supabaseRowLimitText) {
+                    supabaseRowLimitText.parentElement.classList.add('text-red-400');
+                    supabaseRowLimitText.parentElement.classList.remove('text-blue-400');
+                    // Ensure the tooltip header matches
+                    const tooltipHeader = supabaseRowLimitText.parentElement.querySelector('p:first-child');
+                    if (tooltipHeader) {
+                        tooltipHeader.classList.add('text-red-400');
+                        tooltipHeader.classList.remove('text-blue-400');
+                    }
+                }
+
+                if (App.elements.supabaseWarning) {
+                    App.elements.supabaseWarning.classList.remove('hidden');
+                    const warningText = App.elements.supabaseWarning.querySelector('p');
+                    if (warningText) {
+                        warningText.textContent = `Warning: Found ${count.toLocaleString()} rows. Only 1,000 rows will be fetched, and some data will be omitted. Consider narrowing your date range.`;
+                    }
+                }
+            } else {
+                supabaseCountValue.classList.add('text-green-400');
+                supabaseCountValue.classList.remove('text-red-400');
+
+                if (supabaseRowLimitText) {
+                    supabaseRowLimitText.parentElement.classList.remove('text-red-400');
+                    supabaseRowLimitText.parentElement.classList.add('text-blue-400');
+                    const tooltipHeader = supabaseRowLimitText.parentElement.querySelector('p:first-child');
+                    if (tooltipHeader) {
+                        tooltipHeader.classList.remove('text-red-400');
+                        tooltipHeader.classList.add('text-blue-400');
+                    }
+                }
+
+                if (App.elements.supabaseWarning) App.elements.supabaseWarning.classList.add('hidden');
+            }
+        } catch (err) {
+            supabaseCountValue.textContent = 'Error';
+            supabaseCountValue.classList.add('text-red-400');
+        }
+    }, 500);
 };
 
 App.clearSupabaseDateRange = function () {

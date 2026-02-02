@@ -50,6 +50,9 @@ App.cacheDom = function cacheDom() {
         supabaseDateRangeText: document.getElementById('supabase-date-range-text'),
         supabaseDatePickerInline: document.getElementById('supabase-date-picker-inline'),
         supabaseWarning: document.getElementById('supabase-warning'),
+        supabaseRowCount: document.getElementById('supabase-row-count'),
+        supabaseCountValue: document.getElementById('supabase-count-value'),
+        supabaseRowLimitText: document.getElementById('supabase-row-limit-text'),
         loadingOverlay: document.getElementById('loading-overlay'),
         loadingText: document.getElementById('loading-text')
     };
