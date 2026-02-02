@@ -51,41 +51,41 @@
 
     <!-- Header -->
     <header
-        class="bg-slate-900 border-b border-slate-800 px-8 py-4 flex justify-between items-center shadow-sm shrink-0 z-40 relative">
+        class="bg-slate-900 border-b border-slate-800 px-6 py-2 flex justify-between items-center shadow-sm shrink-0 z-40 relative">
         <div class="flex items-center gap-3">
-            <div class="bg-slate-800 text-blue-400 p-2 rounded-lg border border-slate-700">
+            <div class="bg-slate-800 text-blue-400 p-1.5 rounded-lg border border-slate-700">
                 <i class="ph ph-calendar-check text-xl"></i>
             </div>
             <div>
-                <h1 class="font-bold text-lg leading-tight text-slate-100">Monthly Project Report</h1>
-                <p class="text-xs text-slate-400">Project Trends & Developer Breakdown</p>
+                <h1 class="font-bold text-base leading-tight text-slate-100">Monthly Project Report</h1>
+                <p class="text-[10px] text-slate-400">Project Trends & Developer Breakdown</p>
             </div>
         </div>
 
         <!-- Date Filter Trigger (Hidden initially) -->
         <div id="header-date-filter" class="hidden md:flex items-center transition-all opacity-0">
             <button id="date-filter-trigger"
-                class="flex items-center gap-3 bg-slate-800/50 hover:bg-slate-700/50 px-5 py-2.5 rounded-2xl border border-slate-700/50 transition-all hover:scale-[1.02] active:scale-95 group">
+                class="flex items-center gap-3 bg-slate-800/50 hover:bg-slate-700/50 px-4 py-1.5 rounded-xl border border-slate-700/50 transition-all hover:scale-[1.02] active:scale-95 group">
                 <div
                     class="bg-blue-500/10 text-blue-400 p-1.5 rounded-lg border border-blue-500/20 group-hover:bg-blue-500/20 transition-colors">
-                    <i class="ph ph-calendar text-lg"></i>
+                    <i class="ph ph-calendar text-base"></i>
                 </div>
                 <div class="flex flex-col items-start">
-                    <span class="text-[9px] uppercase tracking-widest text-slate-500 font-bold leading-none mb-1">Date
+                    <span class="text-[8px] uppercase tracking-widest text-slate-500 font-bold leading-none mb-1">Date
                         Range</span>
-                    <span id="date-range-display" class="text-sm text-slate-200 font-medium">Showing everything</span>
+                    <span id="date-range-display" class="text-xs text-slate-200 font-medium">Showing everything</span>
                 </div>
-                <i class="ph ph-caret-down text-slate-500 ml-2 group-hover:text-slate-300 transition-colors"></i>
+                <i class="ph ph-caret-down text-slate-500 ml-1 group-hover:text-slate-300 transition-colors"></i>
             </button>
         </div>
 
-        <div class="flex items-center gap-6">
+        <div class="flex items-center gap-4">
             <button onclick="toggleChart()" id="toggle-chart-btn"
-                class="hidden text-xs font-medium text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 hover:bg-slate-700 transition-colors">
+                class="hidden text-[10px] font-medium text-slate-400 hover:text-white flex items-center gap-1 bg-slate-800 px-3 py-1 rounded-full border border-slate-700 hover:bg-slate-700 transition-colors">
                 <i class="ph ph-caret-up"></i> Hide Graph
             </button>
             <a href="./"
-                class="text-sm font-medium text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-2">
+                class="text-xs font-medium text-slate-400 hover:text-blue-400 transition-colors flex items-center gap-2">
                 <i class="ph ph-arrow-counter-clockwise"></i> New File
             </a>
         </div>
@@ -144,7 +144,7 @@
 
             <!-- Fixed Chart Section -->
             <div id="chart-section"
-                class="bg-slate-900 border-b border-slate-800 flex flex-col p-4 shrink-0 shadow-lg relative z-30 transition-all">
+                class="bg-slate-900 border-b border-slate-800 flex flex-col p-3 shrink-0 shadow-lg relative z-30 transition-all">
                 <div class="flex justify-between items-start mb-2 shrink-0 px-4">
                     <div>
                         <h3 class="text-lg font-bold text-slate-100">Monthly Hours Trend</h3>
@@ -172,8 +172,8 @@
 
                 <!-- Middle Section: Project Breakdown -->
                 <div id="project-section" class="flex flex-col p-0 overflow-hidden shrink-0 table-section">
-                    <div class="p-4 bg-slate-950 shrink-0">
-                        <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2 px-4">
+                    <div class="p-3 bg-slate-950 shrink-0">
+                        <h3 class="text-xs font-bold text-slate-100 flex items-center gap-2 px-5">
                             <i class="ph ph-briefcase text-blue-400"></i> Project Breakdown
                         </h3>
                     </div>
@@ -199,8 +199,8 @@
 
                 <!-- Bottom Section: Data Table -->
                 <div id="developer-section" class="flex flex-col p-0 overflow-hidden shrink-0 table-section">
-                    <div class="p-4 bg-slate-950 shrink-0">
-                        <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2 px-4">
+                    <div class="p-3 bg-slate-950 shrink-0">
+                        <h3 class="text-xs font-bold text-slate-100 flex items-center gap-2 px-5">
                             <i class="ph ph-users text-blue-400"></i> Developer Breakdown
                         </h3>
                     </div>
@@ -226,8 +226,8 @@
 
                 <!-- Developer Insights Section -->
                 <div id="insights-section" class="flex flex-col p-0 overflow-hidden shrink-0 table-section mb-10">
-                    <div class="p-4 bg-slate-950 shrink-0 flex justify-between items-center">
-                        <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2 px-4">
+                    <div class="p-3 bg-slate-950 shrink-0 flex justify-between items-center">
+                        <h3 class="text-xs font-bold text-slate-100 flex items-center gap-2 px-5">
                             <i class="ph ph-chart-bar text-blue-400"></i> Developer Project Insights
                         </h3>
                     </div>

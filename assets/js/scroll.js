@@ -191,3 +191,30 @@ App.initializeScrollNavigationHighlighting = function initializeScrollNavigation
     setTimeout(updateActiveNav, 100);
 };
 
+App.initializeChartScrollPassthrough = function initializeChartScrollPassthrough() {
+    const { chartSection, scrollContent } = App.elements;
+    if (!chartSection || !scrollContent) return;
+
+    chartSection.addEventListener('wheel', (e) => {
+        // Check if we are scrolling inside a scrollable legend
+        const legend = e.target.closest('.chart-legend');
+        if (legend) {
+            const isScrollable = legend.scrollHeight > legend.clientHeight;
+            if (isScrollable) {
+                const isAtTop = legend.scrollTop === 0;
+                const isAtBottom = Math.abs(legend.scrollHeight - legend.clientHeight - legend.scrollTop) < 1;
+
+                // If there's room to scroll in the attempted direction, let the legend handle it
+                if (e.deltaY < 0 && !isAtTop) return;
+                if (e.deltaY > 0 && !isAtBottom) return;
+            }
+        }
+
+        // Redirect vertical scroll to the content area
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+            scrollContent.scrollTop += e.deltaY;
+            e.preventDefault();
+        }
+    }, { passive: false });
+};
+

@@ -34,6 +34,7 @@ App.bindEvents = function bindEvents() {
 document.addEventListener('DOMContentLoaded', () => {
     App.cacheDom();
     App.bindEvents();
+    App.initializeChartScrollPassthrough();
 
     App.initializeDatabase((success) => {
         if (success) {
