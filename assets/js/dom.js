@@ -34,7 +34,19 @@ App.cacheDom = function cacheDom() {
         // Date Filter Elements
         headerDateFilter: document.getElementById('header-date-filter'),
         dateFilterTrigger: document.getElementById('date-filter-trigger'),
-        dateRangeDisplay: document.getElementById('date-range-display')
+        dateRangeDisplay: document.getElementById('date-range-display'),
+        // Supabase & Settings
+        settingsBtn: document.getElementById('settings-btn'),
+        settingsMenu: document.getElementById('settings-menu'),
+        supabaseStatus: document.getElementById('supabase-status'),
+        connectSupabaseBtn: document.getElementById('connect-supabase-btn'),
+        disconnectSupabaseBtn: document.getElementById('disconnect-supabase-btn'),
+        syncSupabaseBtn: document.getElementById('sync-supabase-btn'),
+        supabaseModal: document.getElementById('supabase-modal'),
+        supabaseUrlInput: document.getElementById('supabase-url'),
+        supabaseKeyInput: document.getElementById('supabase-key'),
+        loadingOverlay: document.getElementById('loading-overlay'),
+        loadingText: document.getElementById('loading-text')
     };
 };
 

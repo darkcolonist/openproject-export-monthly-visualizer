@@ -7,7 +7,8 @@ App.state = {
     rawJsonData: null,
     fileName: null,
     startDate: null, // YYYY-MM
-    endDate: null    // YYYY-MM
+    endDate: null,    // YYYY-MM
+    activeSource: null // 'file' or 'supabase'
 };
 
 App.elements = {};

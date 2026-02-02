@@ -29,6 +29,20 @@ App.bindEvents = function bindEvents() {
     if (App.elements.dateFilterTrigger) {
         App.elements.dateFilterTrigger.addEventListener('click', () => App.showDateFilterModal());
     }
+
+    if (App.elements.settingsBtn) {
+        App.elements.settingsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            App.toggleSettingsMenu();
+        });
+    }
+
+    // Close settings on outside click
+    document.addEventListener('click', (e) => {
+        if (App.elements.settingsMenu && !App.elements.settingsMenu.contains(e.target) && e.target !== App.elements.settingsBtn) {
+            App.elements.settingsMenu.classList.add('hidden');
+        }
+    });
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -38,8 +52,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     App.initializeDatabase((success) => {
         if (success) {
+            // Priority 1: URL Parameter (Deep Link)
             App.checkUrlParameter();
-            setTimeout(App.displayCachedFilesList, 100);
+
+            // Priority 2: Supabase Connection (if configured and data exists)
+            if (App.loadSupabaseConfig()) {
+                App.checkAndLoadSupabaseCache((loaded) => {
+                    if (!loaded) {
+                        // Priority 3: Cached XLS Files List
+                        setTimeout(App.displayCachedFilesList, 100);
+                    }
+                });
+            } else {
+                // Priority 3: Cached XLS Files List
+                setTimeout(App.displayCachedFilesList, 100);
+            }
         }
     });
 });

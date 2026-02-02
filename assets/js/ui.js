@@ -62,6 +62,10 @@ App.resetToUpload = function resetToUpload() {
 
     if (fileInput) fileInput.value = '';
 
+    if (App.elements.settingsMenu) {
+        App.elements.settingsMenu.classList.add('hidden');
+    }
+
     // Refresh the cached files list
     setTimeout(() => {
         if (typeof App.displayCachedFilesList === 'function') {
@@ -247,4 +251,58 @@ App.populateInsightControls = function populateInsightControls(usersList, detail
         const selectedProj = e.target.value;
         App.renderDeveloperChart(selectedDev, selectedProj, detailedMap);
     });
+};
+
+// Supabase & Settings UI
+App.showSupabaseModal = function () {
+    const { supabaseModal, supabaseUrlInput, supabaseKeyInput, settingsMenu } = App.elements;
+    if (settingsMenu) settingsMenu.classList.add('hidden');
+    if (supabaseModal) {
+        supabaseModal.classList.remove('hidden');
+        if (App.supabase.config.url) supabaseUrlInput.value = App.supabase.config.url;
+        if (App.supabase.config.key) supabaseKeyInput.value = App.supabase.config.key;
+    }
+};
+
+App.hideSupabaseModal = function () {
+    const { supabaseModal } = App.elements;
+    if (supabaseModal) supabaseModal.classList.add('hidden');
+};
+
+App.updateSupabaseStatus = function (isConnected) {
+    const { supabaseStatus, connectSupabaseBtn, disconnectSupabaseBtn, syncSupabaseBtn } = App.elements;
+
+    if (isConnected) {
+        if (supabaseStatus) supabaseStatus.classList.remove('hidden');
+        if (supabaseStatus) supabaseStatus.classList.add('flex');
+        if (connectSupabaseBtn) connectSupabaseBtn.classList.add('hidden');
+        if (disconnectSupabaseBtn) disconnectSupabaseBtn.classList.remove('hidden');
+        if (syncSupabaseBtn) syncSupabaseBtn.classList.remove('hidden');
+    } else {
+        if (supabaseStatus) supabaseStatus.classList.add('hidden');
+        if (supabaseStatus) supabaseStatus.classList.remove('flex');
+        if (connectSupabaseBtn) connectSupabaseBtn.classList.remove('hidden');
+        if (disconnectSupabaseBtn) disconnectSupabaseBtn.classList.add('hidden');
+        if (syncSupabaseBtn) syncSupabaseBtn.classList.add('hidden');
+    }
+};
+
+App.showLoading = function (text = 'Processing...') {
+    const { loadingOverlay, loadingText } = App.elements;
+    if (loadingOverlay && loadingText) {
+        loadingText.textContent = text;
+        loadingOverlay.classList.remove('hidden');
+    }
+};
+
+App.hideLoading = function () {
+    const { loadingOverlay } = App.elements;
+    if (loadingOverlay) loadingOverlay.classList.add('hidden');
+};
+
+App.toggleSettingsMenu = function () {
+    const { settingsMenu } = App.elements;
+    if (settingsMenu) {
+        settingsMenu.classList.toggle('hidden');
+    }
 };
