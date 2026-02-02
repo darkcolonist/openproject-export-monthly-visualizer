@@ -450,6 +450,8 @@ App.loadSupabaseConfig = function () {
             const parsed = JSON.parse(config);
             App.supabase.config.url = parsed.url;
             App.supabase.config.key = parsed.key;
+            App.supabase.config.startDate = parsed.startDate || null;
+            App.supabase.config.endDate = parsed.endDate || null;
             return true;
         } catch (e) { return false; }
     }
@@ -512,6 +514,11 @@ App.checkAndLoadSupabaseCache = function (callback) {
                         App.state.activeSource = 'supabase';
                         App.processAndRender();
                         App.updateSupabaseStatus(true);
+
+                        // Check if 1000 rows limit hit in cache too
+                        if (cachedFile.rowCount >= 1000) {
+                            if (App.elements.supabaseWarning) App.elements.supabaseWarning.classList.remove('hidden');
+                        }
 
                         // Update URL
                         const newUrl = `${window.location.pathname}?supabase=connected`;

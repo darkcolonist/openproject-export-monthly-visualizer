@@ -1,7 +1,7 @@
 window.App = window.App || {};
 
 // Manual English Locale for Air Datepicker to avoid extra network requests
-const enLocale = {
+App.utils.enLocale = {
     days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
     daysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     daysMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
@@ -83,7 +83,7 @@ App.showDateFilterModal = function () {
 
     // Initialize Air Datepicker
     const datepicker = new AirDatepicker('#air-datepicker-container', {
-        locale: enLocale,
+        locale: App.utils.enLocale,
         view: 'months',
         minView: 'months',
         dateFormat: 'MMMM yyyy',

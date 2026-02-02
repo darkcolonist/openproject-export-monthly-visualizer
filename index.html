@@ -397,12 +397,42 @@
                     <input type="password" id="supabase-key" placeholder="ey4M3r57gPmdpGsstMcFB4UPh..."
                         class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all">
                 </div>
-                <!-- Future enhancement: custom query params -->
-                <!-- <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Additional Filters (Optional)</label>
-                    <input type="text" id="supabase-filters" placeholder="&limit=100" 
-                        class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-slate-200 focus:outline-none">
-                </div> -->
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest flex justify-between">
+                        <span>Fetch Date Range</span>
+                        <span class="text-[10px] text-blue-400 font-medium normal-case flex items-center gap-1">
+                            <i class="ph ph-info"></i> Max 1000 rows
+                        </span>
+                    </label>
+                    <button id="supabase-date-filter-btn"
+                        class="w-full flex items-center justify-between gap-3 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 hover:bg-slate-750 transition-all group">
+                        <div class="flex items-center gap-3">
+                            <i class="ph ph-calendar text-blue-400 group-hover:scale-110 transition-transform"></i>
+                            <span id="supabase-date-range-text" class="text-sm">Last 3 Months (Default)</span>
+                        </div>
+                        <i class="ph ph-caret-down text-slate-500"></i>
+                    </button>
+                    <div id="supabase-date-picker-inline"
+                        class="hidden mt-2 border border-slate-700 rounded-xl overflow-hidden bg-slate-800 shadow-inner">
+                        <div id="supabase-air-datepicker" class="w-full"></div>
+                        <div class="p-3 bg-slate-900/50 border-t border-slate-700 flex gap-2">
+                            <button onclick="App.clearSupabaseDateRange()"
+                                class="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 transition-colors">Clear</button>
+                            <button onclick="App.toggleSupabaseDatePicker()"
+                                class="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider text-blue-400 hover:text-blue-300 transition-colors">Close</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="supabase-warning" class="hidden bg-amber-500/10 border border-amber-500/20 rounded-xl p-4">
+                    <div class="flex gap-3">
+                        <i class="ph ph-warning-circle text-amber-400 text-lg shrink-0"></i>
+                        <p class="text-[10px] text-amber-200 leading-relaxed italic">
+                            Warning: Fetched 1000 rows. Some data might be omitted as the limit has been reached.
+                            Consider narrowing your date range.
+                        </p>
+                    </div>
+                </div>
 
                 <div class="bg-blue-500/5 border border-blue-500/10 rounded-xl p-4">
                     <p class="text-[10px] text-blue-300 leading-relaxed italic">

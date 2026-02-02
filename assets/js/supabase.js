@@ -4,20 +4,33 @@ App.supabase = {
     config: {
         url: null,
         key: null,
-        tableName: 'openproject_timeentries'
+        tableName: 'openproject_timeentries',
+        startDate: null,
+        endDate: null
     },
 
-    async fetchData(filters = {}) {
-        const { url, key, tableName } = this.config;
+    async fetchData() {
+        const { url, key, tableName, startDate, endDate } = this.config;
         if (!url || !key) return null;
 
         try {
             // Build URL with filters
-            let fetchUrl = `${url}/rest/v1/${tableName}?order=date_spent.desc`;
+            let fetchUrl = `${url}/rest/v1/${tableName}?order=date_spent.desc&limit=1000`;
 
-            // Add custom filters if provided (e.g., date ranges)
-            // For now, mirroring the example provided by the user
-            // fetchUrl += '&limit=1000'; 
+            if (startDate && endDate) {
+                // Filter by selected range
+                fetchUrl += `&date_spent=gte.${startDate}-01`;
+
+                const [y, m] = endDate.split('-');
+                const lastDay = new Date(parseInt(y), parseInt(m), 0).getDate();
+                fetchUrl += `&date_spent=lte.${y}-${m}-${lastDay}`;
+            } else {
+                // Default to last 3 months if no range selected
+                const today = new Date();
+                const threeMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 2, 1);
+                const isoDate = threeMonthsAgo.toISOString().split('T')[0];
+                fetchUrl += `&date_spent=gte.${isoDate}`;
+            }
 
             const response = await fetch(fetchUrl, {
                 method: 'GET',
@@ -68,6 +81,13 @@ App.supabase = {
                 App.state.rawJsonData = normalizedData;
                 App.state.fileName = 'Supabase Connection';
                 App.state.activeSource = 'supabase';
+
+                // Row limit warning
+                if (data.length >= 1000) {
+                    if (App.elements.supabaseWarning) App.elements.supabaseWarning.classList.remove('hidden');
+                } else {
+                    if (App.elements.supabaseWarning) App.elements.supabaseWarning.classList.add('hidden');
+                }
 
                 // Cache Supabase data with 365 days expiry in IndexedDB
                 App.cacheSupabaseData(normalizedData);

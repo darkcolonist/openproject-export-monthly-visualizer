@@ -256,18 +256,110 @@ App.populateInsightControls = function populateInsightControls(usersList, detail
 
 // Supabase & Settings UI
 App.showSupabaseModal = function () {
-    const { supabaseModal, supabaseUrlInput, supabaseKeyInput, settingsMenu } = App.elements;
+    const { supabaseModal, supabaseUrlInput, supabaseKeyInput, settingsMenu, supabaseDateFilterBtn } = App.elements;
     if (settingsMenu) settingsMenu.classList.add('hidden');
     if (supabaseModal) {
         supabaseModal.classList.remove('hidden');
         if (App.supabase.config.url) supabaseUrlInput.value = App.supabase.config.url;
         if (App.supabase.config.key) supabaseKeyInput.value = App.supabase.config.key;
+
+        // Hide warning by default
+        if (App.elements.supabaseWarning) App.elements.supabaseWarning.classList.add('hidden');
+
+        // Setup individual button listener if not already done (better in boot.js but doing here for reactive setup)
+        if (supabaseDateFilterBtn && !supabaseDateFilterBtn.hasListener) {
+            supabaseDateFilterBtn.addEventListener('click', App.toggleSupabaseDatePicker);
+            supabaseDateFilterBtn.hasListener = true;
+        }
+
+        App.updateSupabaseDateRangeDisplay();
     }
 };
 
 App.hideSupabaseModal = function () {
-    const { supabaseModal } = App.elements;
+    const { supabaseModal, supabaseDatePickerInline } = App.elements;
     if (supabaseModal) supabaseModal.classList.add('hidden');
+    if (supabaseDatePickerInline) supabaseDatePickerInline.classList.add('hidden');
+};
+
+App.toggleSupabaseDatePicker = function () {
+    const { supabaseDatePickerInline } = App.elements;
+    if (!supabaseDatePickerInline) return;
+
+    const isHidden = supabaseDatePickerInline.classList.contains('hidden');
+    if (isHidden) {
+        supabaseDatePickerInline.classList.remove('hidden');
+        App.initSupabaseDatePicker();
+    } else {
+        supabaseDatePickerInline.classList.add('hidden');
+    }
+};
+
+App.initSupabaseDatePicker = function () {
+    if (App.supabaseDatePicker) return;
+
+    const container = document.getElementById('supabase-air-datepicker');
+    if (!container) return;
+
+    App.supabaseDatePicker = new AirDatepicker('#supabase-air-datepicker', {
+        locale: App.utils.enLocale,
+        view: 'months',
+        minView: 'months',
+        dateFormat: 'MMMM yyyy',
+        range: true,
+        multipleDatesSeparator: ' - ',
+        selectedDates: (App.supabase.config.startDate && App.supabase.config.endDate) ? [
+            new Date(App.supabase.config.startDate + '-01'),
+            new Date(App.supabase.config.endDate + '-01')
+        ] : [],
+        onSelect({ date }) {
+            const dates = Array.isArray(date) ? date : (date ? [date] : []);
+            if (dates.length >= 1) {
+                const sorted = [...dates].sort((a, b) => a - b);
+                const formatDate = (d) => {
+                    const y = d.getFullYear();
+                    const m = String(d.getMonth() + 1).padStart(2, '0');
+                    return `${y}-${m}`;
+                };
+
+                App.supabase.config.startDate = formatDate(sorted[0]);
+                App.supabase.config.endDate = formatDate(sorted[dates.length - 1]);
+            } else {
+                App.supabase.config.startDate = null;
+                App.supabase.config.endDate = null;
+            }
+            App.updateSupabaseDateRangeDisplay();
+        }
+    });
+};
+
+App.updateSupabaseDateRangeDisplay = function () {
+    const { supabaseDateRangeText } = App.elements;
+    if (!supabaseDateRangeText) return;
+
+    const { startDate, endDate } = App.supabase.config;
+    if (!startDate || !endDate) {
+        supabaseDateRangeText.textContent = 'Last 3 Months (Default)';
+        supabaseDateRangeText.classList.remove('text-blue-400');
+        supabaseDateRangeText.classList.add('text-slate-400');
+    } else {
+        const format = (key) => {
+            const [y, m] = key.split('-');
+            return new Date(y, m - 1).toLocaleString('en-US', { month: 'short', year: 'numeric' });
+        };
+        supabaseDateRangeText.textContent = `${format(startDate)} - ${format(endDate)}`;
+        supabaseDateRangeText.classList.add('text-blue-400');
+        supabaseDateRangeText.classList.remove('text-slate-400');
+    }
+};
+
+App.clearSupabaseDateRange = function () {
+    App.supabase.config.startDate = null;
+    App.supabase.config.endDate = null;
+    if (App.supabaseDatePicker) {
+        App.supabaseDatePicker.clear();
+    }
+    App.updateSupabaseDateRangeDisplay();
 };
 
 App.updateSupabaseStatus = function (isConnected) {

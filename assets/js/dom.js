@@ -46,6 +46,10 @@ App.cacheDom = function cacheDom() {
         supabaseModal: document.getElementById('supabase-modal'),
         supabaseUrlInput: document.getElementById('supabase-url'),
         supabaseKeyInput: document.getElementById('supabase-key'),
+        supabaseDateFilterBtn: document.getElementById('supabase-date-filter-btn'),
+        supabaseDateRangeText: document.getElementById('supabase-date-range-text'),
+        supabaseDatePickerInline: document.getElementById('supabase-date-picker-inline'),
+        supabaseWarning: document.getElementById('supabase-warning'),
         loadingOverlay: document.getElementById('loading-overlay'),
         loadingText: document.getElementById('loading-text')
     };
