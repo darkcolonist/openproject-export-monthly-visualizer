@@ -14,6 +14,7 @@ App.resetToUpload = function resetToUpload() {
 
     window.history.replaceState({}, '', window.location.pathname);
     localStorage.removeItem('requestedFilePath');
+    localStorage.removeItem('lastLoadedFile');
 
     if (dashboardContainer) {
         dashboardContainer.classList.add('hidden');
@@ -272,16 +273,29 @@ App.hideSupabaseModal = function () {
 App.updateSupabaseStatus = function (isConnected) {
     const { supabaseStatus, connectSupabaseBtn, disconnectSupabaseBtn, syncSupabaseBtn } = App.elements;
 
+    // Find the text label inside the connect/disconnect buttons if needed
+    const connectLabel = connectSupabaseBtn ? connectSupabaseBtn.querySelector('span') : null;
+
     if (isConnected) {
-        if (supabaseStatus) supabaseStatus.classList.remove('hidden');
-        if (supabaseStatus) supabaseStatus.classList.add('flex');
-        if (connectSupabaseBtn) connectSupabaseBtn.classList.add('hidden');
+        if (supabaseStatus) {
+            supabaseStatus.classList.remove('hidden');
+            supabaseStatus.classList.add('flex');
+        }
+        if (connectSupabaseBtn) {
+            connectSupabaseBtn.classList.remove('hidden');
+            if (connectLabel) connectLabel.textContent = 'Configure Supabase';
+        }
         if (disconnectSupabaseBtn) disconnectSupabaseBtn.classList.remove('hidden');
         if (syncSupabaseBtn) syncSupabaseBtn.classList.remove('hidden');
     } else {
-        if (supabaseStatus) supabaseStatus.classList.add('hidden');
-        if (supabaseStatus) supabaseStatus.classList.remove('flex');
-        if (connectSupabaseBtn) connectSupabaseBtn.classList.remove('hidden');
+        if (supabaseStatus) {
+            supabaseStatus.classList.add('hidden');
+            supabaseStatus.classList.remove('flex');
+        }
+        if (connectSupabaseBtn) {
+            connectSupabaseBtn.classList.remove('hidden');
+            if (connectLabel) connectLabel.textContent = 'Connect Supabase';
+        }
         if (disconnectSupabaseBtn) disconnectSupabaseBtn.classList.add('hidden');
         if (syncSupabaseBtn) syncSupabaseBtn.classList.add('hidden');
     }
@@ -306,3 +320,4 @@ App.toggleSettingsMenu = function () {
         settingsMenu.classList.toggle('hidden');
     }
 };
+

@@ -75,6 +75,10 @@ App.supabase = {
                 App.processAndRender();
                 App.hideLoading();
 
+                // Update URL
+                const newUrl = `${window.location.pathname}?supabase=connected`;
+                window.history.replaceState({ source: 'supabase' }, '', newUrl);
+
                 // Update UI state
                 App.updateSupabaseStatus(true);
             } else {
@@ -93,8 +97,7 @@ App.supabase = {
             this.config.key = null;
             App.state.activeSource = null;
             App.clearSupabaseConfig();
-            App.updateSupabaseStatus(false);
-            App.resetToUpload();
+            window.location.href = './';
         });
     }
 };

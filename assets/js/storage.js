@@ -69,6 +69,7 @@ App.initializeDatabase = function initializeDatabase(callback) {
 App.checkUrlParameter = function checkUrlParameter() {
     const urlParams = new URLSearchParams(window.location.search);
     const uploadParam = urlParams.get('upload');
+    const supabaseParam = urlParams.get('supabase');
     const { dropZone } = App.elements;
 
     if (uploadParam && dropZone) {
@@ -88,6 +89,11 @@ App.checkUrlParameter = function checkUrlParameter() {
         });
 
         App.loadCachedFile(filename);
+    } else if (supabaseParam === 'connected') {
+        // Handle direct link to supabase mode
+        if (App.loadSupabaseConfig()) {
+            App.checkAndLoadSupabaseCache();
+        }
     }
 };
 
@@ -264,7 +270,13 @@ App.getAllCachedFiles = function getAllCachedFiles(callback) {
                 const files = getAllRequest.result || [];
 
                 const validFiles = files
-                    .filter(file => (Date.now() - file.timestamp) < 86400000)
+                    .filter(file => {
+                        const age = Date.now() - file.timestamp;
+                        if (file.name === 'SUPABASE_CACHE' || file.isSupabase) {
+                            return age < (365 * 24 * 60 * 60 * 1000); // 365 days
+                        }
+                        return age < 86400000; // 24 hours for others
+                    })
                     .sort((a, b) => b.timestamp - a.timestamp);
 
                 callback(validFiles);
@@ -356,22 +368,29 @@ App.displayCachedFilesList = function displayCachedFilesList() {
             listWrapper.className = 'space-y-2';
 
             files.forEach((fileData) => {
+                const isSupabase = fileData.name === 'SUPABASE_CACHE' || fileData.isSupabase;
                 const fileButton = document.createElement('button');
-                fileButton.onclick = () => App.loadCachedFile(fileData.name);
+                fileButton.onclick = () => {
+                    if (isSupabase) {
+                        App.checkAndLoadSupabaseCache();
+                    } else {
+                        App.loadCachedFile(fileData.name);
+                    }
+                };
                 fileButton.className = 'w-full text-left text-sm text-slate-300 hover:text-blue-400 hover:bg-slate-800 px-4 py-2.5 rounded-lg border border-slate-700 hover:border-blue-500 transition-all flex items-center justify-between group';
 
                 const leftSection = document.createElement('div');
                 leftSection.className = 'flex items-center gap-3 flex-1 min-w-0';
 
                 const icon = document.createElement('i');
-                icon.className = 'ph ph-file-xls text-green-400 text-lg flex-shrink-0';
+                icon.className = isSupabase ? 'ph ph-database text-blue-400 text-lg flex-shrink-0' : 'ph ph-file-xls text-green-400 text-lg flex-shrink-0';
 
                 const fileInfo = document.createElement('div');
                 fileInfo.className = 'flex-1 min-w-0';
 
                 const fileName = document.createElement('div');
                 fileName.className = 'font-medium truncate';
-                fileName.textContent = fileData.name;
+                fileName.textContent = isSupabase ? 'Supabase Live Connection' : fileData.name;
 
                 const fileStats = document.createElement('div');
                 fileStats.className = 'text-xs text-slate-500 mt-0.5';
@@ -493,6 +512,11 @@ App.checkAndLoadSupabaseCache = function (callback) {
                         App.state.activeSource = 'supabase';
                         App.processAndRender();
                         App.updateSupabaseStatus(true);
+
+                        // Update URL
+                        const newUrl = `${window.location.pathname}?supabase=connected`;
+                        window.history.replaceState({ source: 'supabase' }, '', newUrl);
+
                         if (callback) callback(true);
                     } else {
                         if (callback) callback(false);

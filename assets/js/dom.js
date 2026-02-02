@@ -35,6 +35,7 @@ App.cacheDom = function cacheDom() {
         headerDateFilter: document.getElementById('header-date-filter'),
         dateFilterTrigger: document.getElementById('date-filter-trigger'),
         dateRangeDisplay: document.getElementById('date-range-display'),
+        headerNewBtn: document.getElementById('header-new-btn'),
         // Supabase & Settings
         settingsBtn: document.getElementById('settings-btn'),
         settingsMenu: document.getElementById('settings-menu'),

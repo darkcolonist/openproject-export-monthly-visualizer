@@ -36,7 +36,6 @@ App.bindEvents = function bindEvents() {
             App.toggleSettingsMenu();
         });
     }
-
     // Close settings on outside click
     document.addEventListener('click', (e) => {
         if (App.elements.settingsMenu && !App.elements.settingsMenu.contains(e.target) && e.target !== App.elements.settingsBtn) {
@@ -52,21 +51,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     App.initializeDatabase((success) => {
         if (success) {
-            // Priority 1: URL Parameter (Deep Link)
+            // Priority 1: Check if Supabase is configured to update UI status
+            const hasSupabaseConfig = App.loadSupabaseConfig();
+            App.updateSupabaseStatus(hasSupabaseConfig);
+
+            // Priority 2: Handle deep links/routing
             App.checkUrlParameter();
 
-            // Priority 2: Supabase Connection (if configured and data exists)
-            if (App.loadSupabaseConfig()) {
-                App.checkAndLoadSupabaseCache((loaded) => {
-                    if (!loaded) {
-                        // Priority 3: Cached XLS Files List
-                        setTimeout(App.displayCachedFilesList, 100);
-                    }
-                });
-            } else {
-                // Priority 3: Cached XLS Files List
-                setTimeout(App.displayCachedFilesList, 100);
-            }
+            // Priority 3: Default view (if no URL param triggered a state)
+            setTimeout(() => {
+                if (!App.state.activeSource) {
+                    App.displayCachedFilesList();
+                }
+            }, 100);
         }
     });
 });

@@ -85,19 +85,13 @@
                 <i class="ph ph-caret-up"></i> Hide Graph
             </button>
 
-            <!-- Supabase Status Indicator -->
-            <div id="supabase-status"
-                class="hidden items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20">
-                <div class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
-                <span class="text-[10px] font-medium text-blue-400 uppercase tracking-wider">Supabase Connected</span>
-            </div>
 
             <!-- Split Button: New File and Settings -->
             <div class="flex items-center -space-x-px">
-                <a href="./"
+                <a href="./" id="header-new-btn"
                     class="flex items-center gap-2 px-4 h-[38px] bg-transparent hover:bg-blue-500/10 text-blue-400 text-xs font-bold rounded-l-xl transition-all border border-blue-500/50 hover:border-blue-400 active:scale-95">
                     <i class="ph ph-file-plus text-base"></i>
-                    <span>New</span>
+                    <span>New File</span>
                 </a>
 
                 <div class="relative">
@@ -109,6 +103,14 @@
                     <div id="settings-menu"
                         class="hidden absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-1 duration-200">
                         <div class="p-2 flex flex-col gap-1">
+                            <!-- Supabase Status Indicator -->
+                            <div id="supabase-status"
+                                class="hidden items-center gap-2 px-3 py-2 mb-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                                <div class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
+                                <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Supabase
+                                    Connected</span>
+                            </div>
+
                             <h4 class="px-3 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Data
                                 Source</h4>
                             <button id="connect-supabase-btn" onclick="App.showSupabaseModal()"
@@ -392,7 +394,7 @@
                 </div>
                 <div class="space-y-2">
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Anon / Public Key</label>
-                    <input type="password" id="supabase-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+                    <input type="password" id="supabase-key" placeholder="ey4M3r57gPmdpGsstMcFB4UPh..."
                         class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all">
                 </div>
                 <!-- Future enhancement: custom query params -->
