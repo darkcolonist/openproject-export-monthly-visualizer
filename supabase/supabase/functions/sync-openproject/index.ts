@@ -82,8 +82,8 @@ serve(async (req) => {
       }
     ]);
 
-    // 3. Sort: Descending (Newest first)
-    const sortBy = JSON.stringify([["createdAt", "desc"]]);
+    // 3. Sort: Ascending (Oldest first)
+    const sortBy = JSON.stringify([["createdAt", "asc"]]);
 
     // 4. Construct URL
     const url = `${opHost}/api/v3/time_entries?filters=${encodeURIComponent(filters)}&sortBy=${encodeURIComponent(sortBy)}&pageSize=100`;
