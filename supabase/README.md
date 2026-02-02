@@ -6,9 +6,19 @@ This directory contains the Supabase configuration and Edge Functions for the **
 
 - **`supabase/`**: Core Supabase directory.
   - **`config.toml`**: Local Supabase configuration.
+  - **`migrations/`**: SQL migration files for setting up the database schema.
   - **`functions/`**: Supabase Edge Functions.
     - **`sync-openproject/`**: Deno-based function to synchronize time entries from OpenProject to Supabase.
   - **`.env.local`**: Environment variables for local development (Git ignored).
+
+## 🗄️ Database Setup
+
+The database schema is defined in `supabase/migrations/`. 
+
+To apply the schema:
+- **Local Dev**: Runs automatically when you start Supabase with `npx supabase start`.
+- **Manual setup**: You can copy the contents of the migration file into the Supabase Dashboard SQL Editor.
+- **Remote Project**: Use `npx supabase db push`.
 
 ## 🚀 Getting Started
 
