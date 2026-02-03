@@ -57,11 +57,11 @@ body {
     position: sticky;
     top: 0;
     z-index: 30;
-    background-color: #0f172a;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    background-color: #1e293b;
+    /* Match bg-slate-800 */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.2s ease, visibility 0.2s ease;
     max-height: 0;
     overflow: hidden;
 }

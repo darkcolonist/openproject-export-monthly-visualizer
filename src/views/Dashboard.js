@@ -403,11 +403,11 @@ function ScrollContent() {
             const developerBottom = developerTop + developerTable.offsetHeight;
 
             // Check if we are inside project table
-            if (scrollTop + headerHeight >= projectTop && scrollTop < projectBottom - headerHeight) {
+            if (scrollTop >= projectTop && scrollTop < projectBottom - headerHeight) {
                 setFloatingHeader(projectThead, projectTable, projectTable.parentElement);
             }
             // Check if we are inside developer table
-            else if (scrollTop + headerHeight >= developerTop && scrollTop < developerBottom - headerHeight) {
+            else if (scrollTop >= developerTop && scrollTop < developerBottom - headerHeight) {
                 setFloatingHeader(developerThead, developerTable, developerTable.parentElement);
             }
             else {
