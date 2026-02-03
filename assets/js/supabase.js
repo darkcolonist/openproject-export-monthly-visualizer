@@ -83,7 +83,10 @@ App.supabase = {
                 }
             });
 
-            if (!response.ok) return 0;
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({ message: 'Failed to connect to Supabase' }));
+                throw new Error(error.message || 'Failed to connect to Supabase');
+            }
 
             const contentRange = response.headers.get('content-range');
             if (contentRange) {
@@ -94,7 +97,7 @@ App.supabase = {
             return 0;
         } catch (err) {
             console.error('Supabase count error:', err);
-            return 0;
+            throw err;
         }
     },
 
