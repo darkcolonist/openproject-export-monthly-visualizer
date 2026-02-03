@@ -34,7 +34,30 @@ App.cacheDom = function cacheDom() {
         // Date Filter Elements
         headerDateFilter: document.getElementById('header-date-filter'),
         dateFilterTrigger: document.getElementById('date-filter-trigger'),
-        dateRangeDisplay: document.getElementById('date-range-display')
+        dateRangeDisplay: document.getElementById('date-range-display'),
+        headerNewBtn: document.getElementById('header-new-btn'),
+        // Supabase & Settings
+        settingsBtn: document.getElementById('settings-btn'),
+        settingsMenu: document.getElementById('settings-menu'),
+        supabaseStatus: document.getElementById('supabase-status'),
+        connectSupabaseBtn: document.getElementById('connect-supabase-btn'),
+        disconnectSupabaseBtn: document.getElementById('disconnect-supabase-btn'),
+        syncSupabaseBtn: document.getElementById('sync-supabase-btn'),
+        supabaseModal: document.getElementById('supabase-modal'),
+        supabaseUrlInput: document.getElementById('supabase-url'),
+        supabaseKeyInput: document.getElementById('supabase-key'),
+        testSupabaseConnectionBtn: document.getElementById('test-supabase-connection-btn'),
+        supabaseConfigAdvanced: document.getElementById('supabase-config-advanced'),
+        saveSupabaseBtn: document.getElementById('save-supabase-btn'),
+        supabaseDateFilterBtn: document.getElementById('supabase-date-filter-btn'),
+        supabaseDateRangeText: document.getElementById('supabase-date-range-text'),
+        supabaseDatePickerInline: document.getElementById('supabase-date-picker-inline'),
+        supabaseWarning: document.getElementById('supabase-warning'),
+        supabaseRowCount: document.getElementById('supabase-row-count'),
+        supabaseCountValue: document.getElementById('supabase-count-value'),
+        supabaseRowLimitText: document.getElementById('supabase-row-limit-text'),
+        loadingOverlay: document.getElementById('loading-overlay'),
+        loadingText: document.getElementById('loading-text')
     };
 };
 
