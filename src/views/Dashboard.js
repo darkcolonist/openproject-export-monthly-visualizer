@@ -294,99 +294,92 @@ function ScrollContent() {
             const sourceCells = activeHeader.querySelectorAll('th');
             const targetCells = cloneHeader.querySelectorAll('th');
 
-            // Use ComputedStyle for precise used width (respecting border-box)
-            const activeTableStyle = window.getComputedStyle(activeTable);
-            const tableWidth = activeTableStyle.width;
+            // Force the cloned table to match legacy scrollWidth exactly
             const tableClone = cloneHeader.closest('table');
-
             if (tableClone) {
-                // Ensure the cloned table has exact same width and border rules
-                tableClone.style.width = tableWidth;
-                tableClone.style.minWidth = tableWidth;
-                tableClone.style.maxWidth = tableWidth;
-                tableClone.style.borderCollapse = activeTableStyle.borderCollapse;
-                tableClone.style.borderSpacing = activeTableStyle.borderSpacing;
+                tableClone.style.tableLayout = 'fixed';
+                tableClone.style.width = activeTable.scrollWidth + 'px';
+                tableClone.style.minWidth = activeTable.scrollWidth + 'px';
             }
 
             sourceCells.forEach((cell, index) => {
                 if (targetCells[index]) {
-                    const computed = window.getComputedStyle(cell);
-                    // Force the exact used width including borders and padding
                     targetCells[index].style.boxSizing = 'border-box';
-                    targetCells[index].style.width = computed.width;
-                    targetCells[index].style.minWidth = computed.width;
-                    targetCells[index].style.maxWidth = computed.width;
-
-                    // Duplicate padding to avoid font-size/scale adjustments
-                    targetCells[index].style.paddingLeft = computed.paddingLeft;
-                    targetCells[index].style.paddingRight = computed.paddingRight;
+                    const rect = cell.getBoundingClientRect();
+                    const width = rect.width + 'px';
+                    targetCells[index].style.width = width;
+                    targetCells[index].style.minWidth = width;
+                    targetCells[index].style.maxWidth = width;
                 }
             });
         }
 
-        let syncInterval = null;
+        let activeHeaderId = null;
 
         function setFloatingHeader(activeHeader, activeTable, activeWrapper) {
-            if (activeHeader === currentActiveHeader) {
-                const inner = floatingHeader.querySelector('.floating-header-inner');
-                if (inner) {
-                    const cloneHeader = inner.querySelector('thead');
-                    syncWidths(activeHeader, activeTable, cloneHeader);
-                }
-                return;
+            const headerId = activeHeader.id;
+            const inner = floatingHeader.querySelector('.floating-header-inner');
+
+            // Align horizontal position every time either way
+            if (inner) {
+                const wrapperRect = activeWrapper.getBoundingClientRect();
+                const containerRect = floatingHeader.getBoundingClientRect();
+                inner.style.marginLeft = (wrapperRect.left - containerRect.left) + 'px';
+                inner.style.width = wrapperRect.width + 'px';
+                inner.scrollLeft = activeWrapper.scrollLeft;
             }
 
-            // Clone the header
+            if (headerId === activeHeaderId) return;
+
             const clone = activeHeader.cloneNode(true);
             const tableClone = document.createElement('table');
-
-            // Copy table classes and basic layout styles
             tableClone.className = activeTable.className;
             tableClone.style.cssText = activeTable.style.cssText;
-            tableClone.style.tableLayout = 'fixed'; // Controlled width distribution
+            tableClone.style.tableLayout = 'fixed';
+            tableClone.style.width = activeTable.scrollWidth + 'px';
             tableClone.style.marginBottom = '0';
             tableClone.appendChild(clone);
 
-            const inner = document.createElement('div');
-            inner.className = 'floating-header-inner';
-            inner.appendChild(tableClone);
+            const newInner = document.createElement('div');
+            newInner.className = 'floating-header-inner';
+
+            // Initial positioning
+            const wrapperRect = activeWrapper.getBoundingClientRect();
+            const containerRect = floatingHeader.getBoundingClientRect();
+            newInner.style.marginLeft = (wrapperRect.left - containerRect.left) + 'px';
+            newInner.style.width = wrapperRect.width + 'px';
+            newInner.style.marginRight = '0';
+            newInner.style.padding = '0';
+
+            newInner.appendChild(tableClone);
 
             floatingHeader.innerHTML = '';
-            floatingHeader.appendChild(inner);
+            floatingHeader.appendChild(newInner);
             floatingHeader.classList.add('active');
 
-            // Sync horizontal scroll position
-            inner.scrollLeft = activeWrapper.scrollLeft;
+            newInner.scrollLeft = activeWrapper.scrollLeft;
 
-            // Initial width sync
-            syncWidths(activeHeader, activeTable, clone);
-
-            // Re-sync for a few frames to catch late layout reflows/font loading
-            if (syncInterval) clearInterval(syncInterval);
-            let count = 0;
-            syncInterval = setInterval(() => {
+            requestAnimationFrame(() => {
                 syncWidths(activeHeader, activeTable, clone);
-                if (++count > 10) clearInterval(syncInterval);
-            }, 100);
+            });
 
-            // Listen for horizontal scroll on header to sync back to wrapper
-            const handleHeaderScroll = () => {
-                if (activeWrapper) {
-                    activeWrapper.scrollLeft = inner.scrollLeft;
+            // Bidirectional horizontal scroll sync
+            newInner.addEventListener('scroll', () => {
+                const wrapper = currentActiveWrapper;
+                if (wrapper && Math.abs(wrapper.scrollLeft - newInner.scrollLeft) > 1) {
+                    wrapper.scrollLeft = newInner.scrollLeft;
                 }
-            };
-            inner.addEventListener('scroll', handleHeaderScroll);
+            });
 
-            currentActiveHeader = activeHeader;
+            activeHeaderId = headerId;
             currentActiveWrapper = activeWrapper;
         }
 
         function clearFloatingHeader() {
-            if (syncInterval) clearInterval(syncInterval);
             if (floatingHeader.classList.contains('active')) {
                 floatingHeader.classList.remove('active');
                 floatingHeader.innerHTML = '';
-                currentActiveHeader = null;
+                activeHeaderId = null;
                 currentActiveWrapper = null;
             }
         }
@@ -432,40 +425,42 @@ function ScrollContent() {
         scrollContent.addEventListener('scroll', updateFloatingHeader);
         window.addEventListener('resize', updateFloatingHeader);
 
+        const wrapperListeners = [];
+
         const attachWrapperListener = (tableId) => {
             const table = document.getElementById(tableId);
             if (table && table.parentElement) {
                 const wrapper = table.parentElement;
 
-                // Track resizes of the table itself
-                resizeObserver.observe(table);
-
-                wrapper.addEventListener('scroll', () => {
+                const onScroll = () => {
                     const inner = floatingHeader.querySelector('.floating-header-inner');
-                    if (inner && (
-                        (tableId === 'project-table' && currentActiveHeader?.id === 'project-thead') ||
-                        (tableId === 'developer-table' && currentActiveHeader?.id === 'developer-thead')
-                    )) {
+                    const isActive = (tableId === 'project-table' && activeHeaderId === 'project-thead') ||
+                        (tableId === 'developer-table' && activeHeaderId === 'developer-thead');
+
+                    if (inner && isActive && Math.abs(inner.scrollLeft - wrapper.scrollLeft) > 1) {
                         inner.scrollLeft = wrapper.scrollLeft;
                     }
-                });
+                };
+
+                wrapper.addEventListener('scroll', onScroll);
+                wrapperListeners.push({ el: wrapper, fn: onScroll });
             }
         };
 
         // Delay to ensure components are mounted and layout is stable
-        setTimeout(() => {
+        const initTimeout = setTimeout(() => {
             attachWrapperListener('project-table');
             attachWrapperListener('developer-table');
             updateFloatingHeader();
         }, 400);
 
         return () => {
-            if (syncInterval) clearInterval(syncInterval);
+            clearTimeout(initTimeout);
             scrollContent.removeEventListener('scroll', updateFloatingHeader);
             window.removeEventListener('resize', updateFloatingHeader);
-            resizeObserver.disconnect();
+            wrapperListeners.forEach(({ el, fn }) => el.removeEventListener('scroll', fn));
         };
-    }, []);
+    }, [rawData.value]);
 
     return html`
         <div id="scroll-content" ref=${scrollRef} class="flex-1 overflow-y-auto relative bg-slate-950">
@@ -519,7 +514,7 @@ function ProjectSection() {
             <div class="px-8 pb-8">
                 <div class="bg-slate-900 rounded-xl border border-slate-800">
                     <div class="table-scroll-wrapper overflow-x-auto">
-                        <table id="project-table" class="text-sm text-left w-full" style="min-width: 100%; border-collapse: separate; border-spacing: 0;">
+                        <table id="project-table" class="text-sm text-left border-collapse" style="min-width: 100%;">
                             <thead id="project-thead" class="text-xs text-slate-400 uppercase bg-slate-800">
                                 <tr>
                                     <th class="px-4 py-3 sticky left-0 bg-slate-800 z-20 border-b border-r border-slate-700 font-semibold">Project</th>
@@ -588,7 +583,7 @@ function DeveloperSection() {
             <div class="px-8 pb-8">
                 <div class="bg-slate-900 rounded-xl border border-slate-800">
                     <div class="table-scroll-wrapper overflow-x-auto">
-                        <table id="developer-table" class="text-sm text-left w-full" style="min-width: 100%; border-collapse: separate; border-spacing: 0;">
+                        <table id="developer-table" class="text-sm text-left border-collapse" style="min-width: 100%;">
                             <thead id="developer-thead" class="text-xs text-slate-400 uppercase bg-slate-800">
                                 <tr>
                                     <th class="px-4 py-3 sticky left-0 bg-slate-800 z-20 border-b border-r border-slate-700 font-semibold">Developer</th>
