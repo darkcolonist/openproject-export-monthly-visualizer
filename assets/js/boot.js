@@ -29,6 +29,19 @@ App.bindEvents = function bindEvents() {
     if (App.elements.dateFilterTrigger) {
         App.elements.dateFilterTrigger.addEventListener('click', () => App.showDateFilterModal());
     }
+
+    if (App.elements.settingsBtn) {
+        App.elements.settingsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            App.toggleSettingsMenu();
+        });
+    }
+    // Close settings on outside click
+    document.addEventListener('click', (e) => {
+        if (App.elements.settingsMenu && !App.elements.settingsMenu.contains(e.target) && e.target !== App.elements.settingsBtn) {
+            App.elements.settingsMenu.classList.add('hidden');
+        }
+    });
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -38,8 +51,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     App.initializeDatabase((success) => {
         if (success) {
+            // Priority 1: Check if Supabase is configured to update UI status
+            const hasSupabaseConfig = App.loadSupabaseConfig();
+            App.updateSupabaseStatus(hasSupabaseConfig);
+
+            // Priority 2: Handle deep links/routing
             App.checkUrlParameter();
-            setTimeout(App.displayCachedFilesList, 100);
+
+            // Priority 3: Default view (if no URL param triggered a state)
+            setTimeout(() => {
+                if (!App.state.activeSource) {
+                    App.displayCachedFilesList();
+                }
+            }, 100);
         }
     });
 });
