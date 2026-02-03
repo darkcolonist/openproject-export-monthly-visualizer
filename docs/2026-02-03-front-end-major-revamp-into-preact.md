@@ -1,8 +1,9 @@
-# Preact Migration Plan
+# Preact Migration Plan ✅ IMPLEMENTED
 
 **Target:** `openproject-export-monthly-visualizer` -> Preact + htm  
 **Location:** Baguio, PH (GMT +0800)  
-**Vibe:** Buildless, Clean, and low-maintenance.
+**Vibe:** Buildless, Clean, and low-maintenance.  
+**Status:** ✅ Complete - See `index-preact.html` for the new implementation
 
 ---
 
@@ -35,7 +36,7 @@ Put this in your `<head>`. This is how the browser finds your libraries.
     "imports": {
         "preact": "https://esm.sh/preact@10.19.0",
         "preact/hooks": "https://esm.sh/preact@10.19.0/hooks",
-        "preact/signals": "https://esm.sh/preact-signals@1.2.2",
+        "@preact/signals": "https://esm.sh/@preact/signals@1.2.2?external=preact",
         "htm": "https://esm.sh/htm@3.1.1",
         "app/": "./src/"
     }
@@ -47,7 +48,7 @@ Put this in your `<head>`. This is how the browser finds your libraries.
 
 ## 🧠 3. Centralized Store (`src/store.js`)
 ```javascript
-import { signal, computed } from 'preact/signals';
+import { signal, computed } from '@preact/signals';
 
 // State
 export const rawData = signal([]);
@@ -70,7 +71,7 @@ export const setReportData = (data, name) => {
 
 ## 🛣️ 4. The Hash Router (`src/router.js`)
 ```javascript
-import { signal } from 'preact/signals';
+import { signal } from '@preact/signals';
 
 export const route = signal(window.location.hash || '#upload');
 
