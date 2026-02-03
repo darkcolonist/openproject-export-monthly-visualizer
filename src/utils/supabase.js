@@ -143,7 +143,7 @@ export async function syncSupabase(url, key, startDate = null, endDate = null) {
         activeSource.value = 'supabase';
 
         setLoading(false);
-        goToDashboard();
+        goToDashboard('supabase');
 
         return {
             success: true,

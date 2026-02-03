@@ -16,8 +16,16 @@ import {
     toggleSettings,
     showSupabaseModal,
     toggleChart,
-    chartVisible
+    chartVisible,
+    setSupabaseConfig,
+    clearData,
+    supabaseUrl,
+    supabaseKey,
+    setReportData
 } from 'app/store.js';
+import { syncSupabase, clearSupabaseConfig } from 'app/utils/supabase.js';
+import { deleteCachedFile } from 'app/utils/storage.js';
+import { goToUpload } from 'app/router.js';
 import { DateFilter } from 'app/components/DateFilter.js';
 
 const html = htm.bind(h);
@@ -134,12 +142,30 @@ function SettingsMenu() {
 
                         ${supabaseConnected.value && html`
                             <button 
+                                onclick=${async () => {
+                    toggleSettings();
+                    try {
+                        await syncSupabase(supabaseUrl.value, supabaseKey.value, startDate.value, endDate.value);
+                    } catch (e) {
+                        alert('Sync failed: ' + e.message);
+                    }
+                }}
                                 class="flex items-center gap-3 px-3 py-2 text-xs text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors group"
                             >
                                 <i class="ph ph-arrows-clockwise group-hover:animate-spin"></i>
                                 <span>Sync Now</span>
                             </button>
                             <button 
+                                onclick=${async () => {
+                    if (confirm('Are you sure you want to disconnect Supabase?')) {
+                        clearSupabaseConfig();
+                        await deleteCachedFile('SUPABASE_CACHE');
+                        setSupabaseConfig(null, null);
+                        clearData();
+                        toggleSettings();
+                        goToUpload();
+                    }
+                }}
                                 class="flex items-center gap-3 px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 rounded-lg transition-colors group"
                             >
                                 <i class="ph ph-plugs-off group-hover:scale-110 transition-transform"></i>

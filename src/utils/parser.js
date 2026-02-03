@@ -49,15 +49,12 @@ export async function parseBuffer(buffer) {
             }
         }
 
-        console.log('Header found at row:', headerIndex);
-
         // Parse with the correct header row
         const jsonData = XLSX.utils.sheet_to_json(firstSheet, {
             range: headerIndex,
             defval: ''
         });
 
-        console.log('Raw JSON data rows:', jsonData.length);
         return normalizeData(jsonData);
     } catch (error) {
         throw new Error(`Failed to parse data: ${error.message}`);
@@ -130,7 +127,6 @@ function normalizeData(data) {
     const unitsKey = findColumnKey(firstRow, ['units', 'hours']);
     const projectKey = findColumnKey(firstRow, ['project']);
 
-    console.log('Detected columns:', { dateKey, userKey, unitsKey, projectKey });
 
     if (!dateKey || !userKey || !unitsKey || !projectKey) {
         console.warn('Missing required columns. Found:', { dateKey, userKey, unitsKey, projectKey });

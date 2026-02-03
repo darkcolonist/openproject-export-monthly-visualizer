@@ -6,9 +6,10 @@ import { h, render } from 'preact';
 import { useEffect } from 'preact/hooks';
 import htm from 'htm';
 import { route, getDashboardFile, goToUpload } from './router.js';
-import { settingsMenuOpen, hasData, setLoading, setReportData, activeSource } from './store.js';
+import { settingsMenuOpen, hasData, setLoading, setReportData, activeSource, setSupabaseConfig, setDateRange, supabaseConnected } from './store.js';
 import { loadCachedFile } from './utils/storage.js';
 import { parseBuffer, normalizeSupabaseData } from './utils/parser.js';
+import { getSupabaseConfig } from './utils/supabase.js';
 import { UploadView } from './views/Upload.js';
 import { DashboardView } from './views/Dashboard.js';
 import { Header } from './components/Header.js';
@@ -37,10 +38,19 @@ function App() {
         return () => document.removeEventListener('click', handleClickOutside);
     }, []);
 
-    // Restore state from URL on initial load and hash change
+    // Restore state from URL and localStorage on initial load
     useEffect(() => {
         const handleRestoration = async () => {
-            // Only restore if we are on dashboard and have no data yet
+            // 1. Restore Supabase Config from localStorage
+            const config = getSupabaseConfig();
+            if (config && config.url && config.key) {
+                setSupabaseConfig(config.url, config.key);
+                if (config.startDate && config.endDate) {
+                    setDateRange(config.startDate, config.endDate);
+                }
+            }
+
+            // 2. Only restore data if we are on dashboard and have no data yet
             if (route.value.startsWith('#dashboard') && !hasData.value) {
                 const filename = getDashboardFile();
 
@@ -51,7 +61,7 @@ function App() {
                         const cached = await loadCachedFile(filename);
 
                         if (cached && cached.data) {
-                            if (cached.isSupabase || filename === 'SUPABASE_CACHE') {
+                            if (cached.isSupabase || filename === 'SUPABASE_CACHE' || filename === 'supabase') {
                                 let data = cached.data;
                                 if (typeof data === 'string') data = JSON.parse(data);
                                 const normalized = normalizeSupabaseData(data);

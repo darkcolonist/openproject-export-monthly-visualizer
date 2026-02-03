@@ -24,19 +24,16 @@ export function UploadView() {
 
     const loadRecentFiles = async () => {
         const files = await getAllCachedFiles();
-        console.log('Loaded cached files:', files.length);
         setRecentFiles(files);
     };
 
     const handleFile = useCallback(async (file, fileBuffer = null) => {
         if (!file) return;
 
-        console.log('Processing file:', file.name);
         setLoading(true, 'Processing file...');
 
         try {
             const data = await parseFile(file);
-            console.log('Parsed data:', data.length, 'rows');
 
             if (data.length === 0) {
                 alert('No valid data found in the file. Please check the file format.');
@@ -66,7 +63,6 @@ export function UploadView() {
     }, []);
 
     const handleLoadCached = useCallback(async (filename) => {
-        console.log('Loading cached file:', filename);
         setLoading(true, 'Loading cached file...');
 
         try {
@@ -74,7 +70,6 @@ export function UploadView() {
             if (cached && cached.data) {
                 // Check if this is Supabase cache (data is JSON array, not ArrayBuffer)
                 if (cached.isSupabase || filename === 'SUPABASE_CACHE') {
-                    console.log('Loading Supabase cached data');
                     // Supabase data is stored as JSON array directly
                     let data = cached.data;
 
@@ -90,7 +85,7 @@ export function UploadView() {
                         setReportData(normalizedData, 'Supabase Connection');
                         activeSource.value = 'supabase';
                         // Use special key for Supabase cache to persist in URL
-                        goToDashboard('SUPABASE_CACHE');
+                        goToDashboard('supabase');
                     } else {
                         alert('No valid data found in cached Supabase data.');
                         loadRecentFiles();
@@ -131,8 +126,6 @@ export function UploadView() {
             return;
         }
 
-        console.log('Setting up upload event listeners');
-
         const handleClick = (e) => {
             e.stopPropagation();
             fileInput.click();
@@ -153,7 +146,6 @@ export function UploadView() {
         const handleDrop = (e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log('File dropped');
             dropZone.classList.remove('border-blue-500', 'bg-slate-800', 'scale-[1.02]');
 
             if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
@@ -162,7 +154,6 @@ export function UploadView() {
         };
 
         const handleFileChange = (e) => {
-            console.log('File input changed');
             if (e.target.files && e.target.files.length > 0) {
                 handleFile(e.target.files[0]);
             }

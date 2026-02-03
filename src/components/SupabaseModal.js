@@ -50,9 +50,9 @@ export function SupabaseModal() {
                 setKey(config.key || '');
                 setLocalStart(config.startDate || '');
                 setLocalEnd(config.endDate || '');
-                if (config.url && config.key) {
-                    setIsConnected(true);
-                }
+                // We don't set setIsConnected(true) here anymore to force 
+                // the user to verify the connection by clicking "Connect" 
+                // before showing date pickers
             } else {
                 setUrl(supabaseUrl.value || '');
                 setKey(supabaseKey.value || '');
@@ -96,6 +96,7 @@ export function SupabaseModal() {
                 locale: localeEn,
                 view: 'months',
                 minView: 'months',
+                container: 'body',
                 dateFormat: 'yyyy-MM',
                 autoClose: true,
                 position: 'bottom center',
@@ -126,6 +127,7 @@ export function SupabaseModal() {
                 locale: localeEn,
                 view: 'months',
                 minView: 'months',
+                container: 'body',
                 dateFormat: 'yyyy-MM',
                 autoClose: true,
                 position: 'bottom center',
@@ -235,9 +237,9 @@ export function SupabaseModal() {
         <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm -z-10" onclick=${handleClose}></div>
             
-            <div class="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col">
                 <!-- Header -->
-                <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50 shrink-0">
                     <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
                         <i class="ph ph-database text-blue-400"></i>
                         Connect Supabase
@@ -248,7 +250,7 @@ export function SupabaseModal() {
                 </div>
                 
                 <!-- Content -->
-                <div class="p-6 space-y-5">
+                <div class="p-6 space-y-5 overflow-y-auto flex-1 custom-scrollbar">
                     <div class="space-y-2">
                         <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Base URL</label>
                         <input 
@@ -354,7 +356,7 @@ export function SupabaseModal() {
                 </div>
 
                 <!-- Footer -->
-                <div class="p-6 bg-slate-800/50 border-t border-slate-800 flex flex-col gap-3">
+                <div class="p-6 bg-slate-800/50 border-t border-slate-800 flex flex-col gap-3 shrink-0">
                     <button 
                         onclick=${handleSave}
                         disabled=${!isConnected || isSyncing}

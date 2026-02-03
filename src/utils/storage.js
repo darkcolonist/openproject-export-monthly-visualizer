@@ -175,6 +175,29 @@ export async function loadCachedFile(filename) {
 
 
 /**
+ * Delete a cached file by filename
+ */
+export async function deleteCachedFile(filename) {
+    try {
+        const db = await openDatabase();
+
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.delete(filename);
+
+            request.onsuccess = () => resolve(true);
+            request.onerror = () => reject(request.error);
+        });
+    } catch (error) {
+        console.error('Error deleting cached file:', error);
+        return false;
+    }
+}
+
+
+
+/**
  * Clear all cached files
  */
 export async function clearCache() {
