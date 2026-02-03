@@ -30,8 +30,22 @@ export const settingsMenuOpen = signal(false);
 export const supabaseModalOpen = signal(false);
 
 // ===== Derived State (Computed) =====
+export const filteredData = computed(() => {
+    let data = rawData.value;
+
+    if (startDate.value) {
+        data = data.filter(row => row.date >= startDate.value);
+    }
+
+    if (endDate.value) {
+        data = data.filter(row => row.date <= endDate.value);
+    }
+
+    return data;
+});
+
 export const activeData = computed(() => {
-    return rawData.value.filter(row => row.units > 0);
+    return filteredData.value.filter(row => row.units > 0);
 });
 
 export const hasData = computed(() => {

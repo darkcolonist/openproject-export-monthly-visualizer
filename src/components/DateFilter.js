@@ -29,20 +29,57 @@ export function DateFilter({ onClose }) {
     const maxMonth = availableMonths.length > 0 ? availableMonths[availableMonths.length - 1] : null;
 
     useEffect(() => {
+        const localeEn = {
+            days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+            daysShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+            daysMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+            months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+            monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            today: 'Today',
+            clear: 'Clear',
+            dateFormat: 'yyyy-MM',
+            timeFormat: 'hh:mm aa',
+            firstDay: 0
+        };
+
+        const minDate = minMonth ? new Date(parseInt(minMonth.split('-')[0]), parseInt(minMonth.split('-')[1]) - 1, 1) : null;
+        const dataMaxDate = maxMonth ? new Date(parseInt(maxMonth.split('-')[0]), parseInt(maxMonth.split('-')[1]) - 1, 1) : null;
+        const now = new Date();
+        const currentMonthDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        const maxDate = dataMaxDate && dataMaxDate > currentMonthDate ? dataMaxDate : currentMonthDate;
+
         // Initialize Air Datepicker for start date
         if (startPickerRef.current && !startDatepickerRef.current) {
             startDatepickerRef.current = new AirDatepicker(startPickerRef.current, {
+                locale: localeEn,
                 view: 'months',
                 minView: 'months',
                 dateFormat: 'yyyy-MM',
                 autoClose: true,
                 position: 'bottom center',
                 classes: 'dark-datepicker',
-                onSelect: ({ date, formattedDate }) => {
+                minDate: minDate,
+                maxDate: localEnd ? new Date(parseInt(localEnd.split('-')[0]), parseInt(localEnd.split('-')[1]) - 1, 1) : maxDate,
+                onSelect: ({ date }) => {
                     if (date) {
                         const year = date.getFullYear();
                         const month = String(date.getMonth() + 1).padStart(2, '0');
-                        setLocalStart(`${year}-${month}`);
+                        const newStart = `${year}-${month}`;
+                        setLocalStart(newStart);
+
+                        // Update end picker's minDate
+                        if (endDatepickerRef.current) {
+                            endDatepickerRef.current.update({
+                                minDate: date
+                            });
+                        }
+                    } else {
+                        setLocalStart('');
+                        if (endDatepickerRef.current) {
+                            endDatepickerRef.current.update({
+                                minDate: minDate
+                            });
+                        }
                     }
                 }
             });
@@ -57,17 +94,35 @@ export function DateFilter({ onClose }) {
         // Initialize Air Datepicker for end date
         if (endPickerRef.current && !endDatepickerRef.current) {
             endDatepickerRef.current = new AirDatepicker(endPickerRef.current, {
+                locale: localeEn,
                 view: 'months',
                 minView: 'months',
                 dateFormat: 'yyyy-MM',
                 autoClose: true,
                 position: 'bottom center',
                 classes: 'dark-datepicker',
-                onSelect: ({ date, formattedDate }) => {
+                minDate: localStart ? new Date(parseInt(localStart.split('-')[0]), parseInt(localStart.split('-')[1]) - 1, 1) : minDate,
+                maxDate: maxDate,
+                onSelect: ({ date }) => {
                     if (date) {
                         const year = date.getFullYear();
                         const month = String(date.getMonth() + 1).padStart(2, '0');
-                        setLocalEnd(`${year}-${month}`);
+                        const newEnd = `${year}-${month}`;
+                        setLocalEnd(newEnd);
+
+                        // Update start picker's maxDate
+                        if (startDatepickerRef.current) {
+                            startDatepickerRef.current.update({
+                                maxDate: date
+                            });
+                        }
+                    } else {
+                        setLocalEnd('');
+                        if (startDatepickerRef.current) {
+                            startDatepickerRef.current.update({
+                                maxDate: maxDate
+                            });
+                        }
                     }
                 }
             });

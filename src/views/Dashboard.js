@@ -7,6 +7,7 @@ import { useRef, useEffect, useState, useCallback } from 'preact/hooks';
 import htm from 'htm';
 import {
     rawData,
+    filteredData,
     fileName,
     chartVisible,
     hasData
@@ -75,8 +76,8 @@ function ChartSection() {
         }
 
         const ctx = chartRef.current.getContext('2d');
-        const months = getMonths(rawData.value);
-        const projects = getProjects(rawData.value);
+        const months = getMonths(filteredData.value);
+        const projects = getProjects(filteredData.value);
 
         // Aggregate data by project and month
         const projectData = {};
@@ -85,7 +86,7 @@ function ChartSection() {
             months.forEach(month => projectData[proj][month] = 0);
         });
 
-        rawData.value.forEach(row => {
+        filteredData.value.forEach(row => {
             if (projectData[row.project] && projectData[row.project][row.date] !== undefined) {
                 projectData[row.project][row.date] += row.units;
             }
@@ -156,7 +157,7 @@ function ChartSection() {
                 chartInstanceRef.current.destroy();
             }
         };
-    }, [rawData.value]);
+    }, [filteredData.value]);
 
     // Scroll passthrough for chart section
     useEffect(() => {
@@ -218,11 +219,11 @@ function ChartSection() {
 }
 
 function ChartLegend() {
-    const projects = getProjects(rawData.value);
+    const projects = getProjects(filteredData.value);
 
     // Calculate totals for sorting
     const projectTotals = {};
-    rawData.value.forEach(row => {
+    filteredData.value.forEach(row => {
         if (!projectTotals[row.project]) projectTotals[row.project] = 0;
         projectTotals[row.project] += row.units;
     });
@@ -460,7 +461,7 @@ function ScrollContent() {
             window.removeEventListener('resize', updateFloatingHeader);
             wrapperListeners.forEach(({ el, fn }) => el.removeEventListener('scroll', fn));
         };
-    }, [rawData.value]);
+    }, [filteredData.value]);
 
     return html`
         <div id="scroll-content" ref=${scrollRef} class="flex-1 overflow-y-auto relative bg-slate-950">
@@ -474,8 +475,8 @@ function ScrollContent() {
 }
 
 function ProjectSection() {
-    const months = getMonths(rawData.value);
-    const projects = getProjects(rawData.value);
+    const months = getMonths(filteredData.value);
+    const projects = getProjects(filteredData.value);
 
     // Aggregate data by project and month
     const projectData = {};
@@ -484,7 +485,7 @@ function ProjectSection() {
         months.forEach(month => projectData[proj][month] = 0);
     });
 
-    rawData.value.forEach(row => {
+    filteredData.value.forEach(row => {
         if (projectData[row.project]) {
             projectData[row.project][row.date] = (projectData[row.project][row.date] || 0) + row.units;
             projectData[row.project].total += row.units;
@@ -543,8 +544,8 @@ function ProjectSection() {
 }
 
 function DeveloperSection() {
-    const months = getMonths(rawData.value);
-    const developers = getDevelopers(rawData.value);
+    const months = getMonths(filteredData.value);
+    const developers = getDevelopers(filteredData.value);
 
     // Aggregate data by developer and month
     const devData = {};
@@ -553,7 +554,7 @@ function DeveloperSection() {
         months.forEach(month => devData[dev][month] = 0);
     });
 
-    rawData.value.forEach(row => {
+    filteredData.value.forEach(row => {
         if (devData[row.user]) {
             devData[row.user][row.date] = (devData[row.user][row.date] || 0) + row.units;
             devData[row.user].total += row.units;
@@ -617,8 +618,8 @@ function InsightsSection() {
     const chartRef = useRef(null);
     const chartInstanceRef = useRef(null);
 
-    const detailedMap = buildDetailedMap(rawData.value);
-    const developers = getDevelopers(rawData.value);
+    const detailedMap = buildDetailedMap(filteredData.value);
+    const developers = getDevelopers(filteredData.value);
 
     // Get projects for selected developer
     const devProjects = selectedDev && detailedMap[selectedDev]
@@ -848,7 +849,7 @@ function Footer() {
         navigator.clipboard.writeText(window.location.href);
     };
 
-    const months = getMonths(rawData.value);
+    const months = getMonths(filteredData.value);
 
     return html`
         <footer class="w-full bg-slate-900 border-t border-slate-800 p-3 shrink-0 z-40 relative">
