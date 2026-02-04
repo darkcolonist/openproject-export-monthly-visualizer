@@ -1,9 +1,6 @@
-import ExcelJS from 'exceljs';
-import * as XLSX from 'xlsx';
-
 /**
  * Data Parsing Utilities
- * Handles parsing of XLSX/CSV files using ExcelJS
+ * Handles parsing of XLS/XLSX/CSV files
  */
 
 /**
@@ -17,8 +14,7 @@ export async function parseFile(file) {
 
         reader.onload = async (e) => {
             try {
-                const buffer = e.target.result;
-                const normalized = await parseBuffer(buffer, file.name);
+                const normalized = await parseBuffer(e.target.result);
                 resolve(normalized);
             } catch (error) {
                 reject(error);
@@ -33,103 +29,34 @@ export async function parseFile(file) {
 /**
  * Parse ArrayBuffer into normalized data structure
  * @param {ArrayBuffer} buffer - The buffer to parse
- * @param {string} fileName - Filename to determine type
  * @returns {Promise<Array>} Parsed data array
  */
-export async function parseBuffer(buffer, fileName = '') {
+export async function parseBuffer(buffer) {
     try {
-        let rows = [];
-        const lowerName = fileName.toLowerCase();
+        const data = new Uint8Array(buffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
 
-        // Strategy: Load data into a standard "Array of Arrays" (rows) structure
-        // independent of the source library.
+        // Find header row by looking for 'date' and 'user' keywords
+        const rawRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+        let headerIndex = 0;
 
-        if (lowerName.endsWith('.xls')) {
-            // Fallback: Use XLSX for legacy binary files
-            const workbook = XLSX.read(buffer, { type: 'array' });
-            // Assume first sheet
-            const firstSheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[firstSheetName];
-            // header: 1 returns array of arrays [ ['a','b'], ['1','2'] ]
-            rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        } else {
-            // Standard: Use ExcelJS for XLSX and CSV
-            const workbook = new ExcelJS.Workbook();
-
-            if (lowerName.endsWith('.csv')) {
-                if (buffer instanceof ArrayBuffer) {
-                    // ExcelJS browser CSV read workaround
-                    await workbook.csv.read(new Blob([buffer]));
-                } else {
-                    await workbook.csv.read(buffer);
-                }
-            } else {
-                // XLSX
-                await workbook.xlsx.load(buffer);
-            }
-
-            const worksheet = workbook.worksheets[0];
-            if (!worksheet) {
-                throw new Error('No worksheets found');
-            }
-
-            // Convert ExcelJS worksheet to standard array of arrays
-            // ExcelJS row.values is [null, cell1, cell2...] (1-based)
-            worksheet.eachRow({ includeEmpty: false }, (row) => {
-                rows.push(row.values.slice(1));
-            });
-        }
-
-        // --- Unified Parsing Logic ---
-
-        // 1. Find Header Row
-        let headerIndex = -1;
-        let headerRow = null;
-
-        for (let i = 0; i < rows.length; i++) {
-            const rowStr = (rows[i] || []).join(' ').toLowerCase();
-            // Look for key columns to identify the header
+        for (let i = 0; i < rawRows.length; i++) {
+            const rowStr = (rawRows[i] || []).join(' ').toLowerCase();
             if (rowStr.includes('date') && rowStr.includes('user')) {
                 headerIndex = i;
-                headerRow = rows[i];
                 break;
             }
         }
 
-        if (headerIndex === -1) {
-            // Fallback: assume first row if specific headers not found
-            // But if rows is empty, return empty
-            if (rows.length === 0) return [];
-            headerIndex = 0;
-            headerRow = rows[0];
-        }
-
-        // 2. Map Data Rows
-        const jsonData = [];
-        const headers = headerRow.map(h => String(h).trim());
-
-        for (let i = headerIndex + 1; i < rows.length; i++) {
-            const rowValues = rows[i];
-            const rowObj = {};
-            let hasData = false;
-
-            headers.forEach((header, colIdx) => {
-                if (header) {
-                    const val = rowValues[colIdx];
-                    rowObj[header] = val;
-                    if (val !== undefined && val !== null && val !== '') hasData = true;
-                }
-            });
-
-            if (hasData) {
-                jsonData.push(rowObj);
-            }
-        }
+        // Parse with the correct header row
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet, {
+            range: headerIndex,
+            defval: ''
+        });
 
         return normalizeData(jsonData);
-
     } catch (error) {
-        console.error("Parser Error", error);
         throw new Error(`Failed to parse data: ${error.message}`);
     }
 }
@@ -141,6 +68,8 @@ export function normalizeSupabaseData(data) {
     if (!Array.isArray(data)) return [];
 
     return data.map((row, index) => {
+        // Handle both legacy format (Date, User, Units, Project) and 
+        // Supabase format (date_spent, user, hours, project)
         const dateVal = row.Date || row.date_spent || row.date || '';
         const user = row.User || row.user || 'Unknown';
         const units = parseFloat(row.Units || row.hours || row.units) || 0;
@@ -149,9 +78,11 @@ export function normalizeSupabaseData(data) {
         // Extract month from date
         let month = '';
         if (dateVal) {
+            // If already in YYYY-MM format, use as-is
             if (/^\d{4}-\d{2}$/.test(dateVal)) {
                 month = dateVal;
             } else {
+                // Parse the date
                 const date = parseDate(dateVal);
                 if (date) {
                     month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -184,15 +115,18 @@ function findColumnKey(row, patterns) {
 
 /**
  * Normalize raw data to consistent structure
+ * Dynamically finds columns: Date, User, Units, Project
  */
 function normalizeData(data) {
     if (!data || data.length === 0) return [];
 
+    // Determine column keys from first row
     const firstRow = data[0];
     const dateKey = findColumnKey(firstRow, ['date', 'spent']);
     const userKey = findColumnKey(firstRow, ['user']);
     const unitsKey = findColumnKey(firstRow, ['units', 'hours']);
     const projectKey = findColumnKey(firstRow, ['project']);
+
 
     if (!dateKey || !userKey || !unitsKey || !projectKey) {
         console.warn('Missing required columns. Found:', { dateKey, userKey, unitsKey, projectKey });
@@ -204,6 +138,7 @@ function normalizeData(data) {
         const units = unitsKey ? parseFloat(row[unitsKey]) || 0 : 0;
         const project = projectKey ? (row[projectKey] || 'Unassigned') : '';
 
+        // Extract month (YYYY-MM format)
         let month = '';
         if (dateVal) {
             const parsed = parseDate(dateVal);
@@ -229,28 +164,33 @@ function normalizeData(data) {
 function parseDate(dateVal) {
     if (!dateVal) return null;
 
-    // ExcelJS usually returns Date objects for date cells, unlike SheetJS which returns numbers by default
-    if (dateVal instanceof Date) {
-        return dateVal;
-    }
-
-    // Handle Excel serial date number (if ExcelJS returned raw number)
+    // Handle Excel serial date number
     if (typeof dateVal === 'number') {
+        // Use XLSX.SSF if available, otherwise calculate manually
+        if (typeof XLSX !== 'undefined' && XLSX.SSF && XLSX.SSF.parse_date_code) {
+            const dateObj = XLSX.SSF.parse_date_code(dateVal);
+            return new Date(dateObj.y, dateObj.m - 1, dateObj.d);
+        }
+        // Manual calculation
         const excelEpoch = new Date(Date.UTC(1899, 11, 30));
         return new Date(excelEpoch.getTime() + dateVal * 86400000);
     }
 
+    // Handle string dates
     const str = String(dateVal).trim();
 
+    // Try ISO format first (YYYY-MM-DD)
     if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
         return new Date(str);
     }
 
+    // Try MM/DD/YYYY
     if (/^\d{1,2}\/\d{1,2}\/\d{4}/.test(str)) {
         const [m, d, y] = str.split('/');
         return new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
     }
 
+    // Try DD/MM/YYYY
     if (/^\d{1,2}\/\d{1,2}\/\d{2,4}/.test(str)) {
         const parts = str.split('/');
         if (parts[0] > 12) {
@@ -258,10 +198,14 @@ function parseDate(dateVal) {
         }
     }
 
+    // Fallback to Date.parse
     const parsed = new Date(str);
     return isNaN(parsed.getTime()) ? null : parsed;
 }
 
+/**
+ * Get unique months from data sorted chronologically
+ */
 export function getMonths(data) {
     const months = new Set();
     data.forEach(row => {
@@ -270,6 +214,9 @@ export function getMonths(data) {
     return Array.from(months).sort();
 }
 
+/**
+ * Get unique projects from data
+ */
 export function getProjects(data) {
     const projects = new Set();
     data.forEach(row => {
@@ -278,6 +225,9 @@ export function getProjects(data) {
     return Array.from(projects).sort();
 }
 
+/**
+ * Get unique developers from data
+ */
 export function getDevelopers(data) {
     const developers = new Set();
     data.forEach(row => {

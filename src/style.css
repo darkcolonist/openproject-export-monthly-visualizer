@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+
+  --color-phBlue: #3b82f6;
+  --color-phRed: #ef4444;
+  --color-darkBg: #020617;
+  --color-cardBg: #0f172a;
+  --color-borderDark: #1e293b;
+}
+
+/* Air Datepicker Dark Theme Overrides */
+.dark-datepicker {
+  --adp-background-color: #0f172a;
+  --adp-color: #e2e8f0;
+  --adp-color-secondary: #94a3b8;
+  --adp-accent-color: #3b82f6;
+  --adp-color-current-date: #3b82f6;
+  --adp-cell-background-color-selected: #3b82f6;
+  --adp-cell-background-color-selected-hover: #2563eb;
+  --adp-day-name-color: #64748b;
+  --adp-border-color: #1e293b;
+  font-family: 'Inter', sans-serif;
+  z-index: 1000;
+}
+
+/* Fix hover brightness in dark mode */
+.dark-datepicker .air-datepicker-nav--title:hover,
+.dark-datepicker .air-datepicker-nav--action:hover,
+.dark-datepicker .air-datepicker-cell.-month-:hover,
+.dark-datepicker .air-datepicker-cell.-year-:hover {
+  background-color: #1e293b !important;
+  /* Slate 800 */
+  color: #f1f5f9 !important;
+  /* Slate 100 */
+}
+
+/* Current day/month/year highlight */
+.dark-datepicker .air-datepicker-cell.-current- {
+  color: #3b82f6;
+}
+
+.dark-datepicker .air-datepicker-cell.-current-.-selected- {
+  color: #ffffff;
+}

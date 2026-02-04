@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cost Report Visualizer</title>
+    <meta name="description"
+        content="Visualize monthly project costs and developer hours with beautiful charts and breakdowns.">
+
+    <!-- Import Map for ES Modules (Buildless Preact) -->
+    <script type="importmap">
+    {
+        "imports": {
+            "preact": "https://esm.sh/preact@10.19.0",
+            "preact/hooks": "https://esm.sh/preact@10.19.0/hooks",
+            "@preact/signals": "https://esm.sh/@preact/signals@1.2.2?external=preact",
+            "htm": "https://esm.sh/htm@3.1.1",
+            "app/": "./src/"
+        }
+    }
+    </script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- SheetJS (XLS/XLSX/CSV Parser) -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Air Datepicker (Beautiful Month Range Picker) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/air-datepicker/air-datepicker.css">
+    <script src="https://cdn.jsdelivr.net/npm/air-datepicker/air-datepicker.js"></script>
+
+    <!-- Application Styles -->
+    <link rel="stylesheet" href="assets/css/app.css">
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        phBlue: '#3b82f6',
+                        phRed: '#ef4444',
+                        darkBg: '#020617',
+                        cardBg: '#0f172a',
+                        borderDark: '#1e293b',
+                    }
+                }
+            }
+        }
+    </script>
+
+
+</head>
+
+<body class="bg-slate-950 overflow-hidden">
+    <!-- Preact App Mount Point -->
+    <div id="app"></div>
+
+    <!-- Main Application Module -->
+    <script type="module" src="./src/main.js"></script>
+</body>
+
+</html>

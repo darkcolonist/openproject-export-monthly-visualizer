@@ -1,0 +1,203 @@
+# Open Project Report Visualizer
+
+## Overview
+
+The **Cost Report Visualizer** is a specialized, client-side web application designed to transform raw Excel and CSV cost reports into high-fidelity visual analytics. By processing data locally within the browser, it ensures low-latency performance and absolute data privacy, making it an ideal tool for sensitive project management reporting.
+
+## Screenshot
+
+![App snapshot](assets/img/snapshot.png)
+
+## Key Features
+
+* **Project-Based Monthly Trends:** Generates a stacked bar chart visualizing total hours logged per month, segmented by project.
+  * *Intelligent Filtering:* Automatically excludes inactive projects (zero hours) to maintain chart clarity.
+  * *Granular Tooltips:* Provides detailed hour breakdowns per project upon interaction.
+
+* **Developer Utilization Matrix:** A comprehensive data table displaying exact hour logs per developer, organized chronologically.
+
+* **Developer Project Insights:** An interactive dashboard section for deep-dive analysis of individual contributions.
+  * *Resource Selection:* Filter data by specific developer to see their multi-month workload trends.
+  * *Project-Specific Drilling:* Narrow down any developer's view to a single project or view their stacked contribution across all projects.
+  * *Instant Hour Totals:* Dropdown selectors display real-time total hour counts for both developers and projects.
+  * *Smart Tooltip Filtering:* Monthly breakdown tooltips automatically hide zero-hour projects for the selected developer.
+
+* **Enhanced Table Navigation:**
+  * *Floating Sticky Headers:* Active table headers stay visible while their table section is in view.
+  * *Horizontal Scroll + Fixed First Column:* Project/Developer names stay visible during horizontal scrolling.
+  * *Synced Scrolling:* Floating headers mirror horizontal scroll for accurate column alignment.
+
+* **Intelligent File Handling:**
+  * *URL Parameter Support:* Create bookmarkable URLs for quick access to specific reports.
+  * *Automatic Caching:* Up to 5 most recent files cached in IndexedDB for 24 hours.
+  * *Recently Uploaded Files:* Visual list showing cached files with row counts and upload timestamps.
+  * *One-Click Reload:* Load any cached file instantly from the upload page.
+  * *Cache Management:* Clear all cached files with a single click and confirmation.
+  * *File Validation:* Automatic detection of invalid file formats with clear error messages and a downloadable sample template.
+  * *Smart Cache Prevention:* Invalid files are rejected before caching to maintain data integrity.
+
+* **Dark Mode Interface:** A professional, high-contrast dark theme optimized for readability and extended usage.
+
+* **Smart Header Detection:** Algorithms automatically identify the correct data schema, bypassing metadata rows often found in exported reports.
+
+* **High-Resolution Export:** One-click functionality to render and download charts as PNG files for presentation decks.
+
+* **Dashboard Controls:** Collapse/expand the chart and use floating navigation buttons to jump between sections (Trends, Projects, Developers, Insights).
+
+* **Open Source Integration:**
+  * *GitHub Links:* Quick access to the source repository from both the dashboard footer and upload page.
+  * *Copy URL Feature:* Share or bookmark specific reports with automatically generated URLs.
+
+## Input Specifications
+
+The application is engineered to parse standard Cost Reports exported in `.xls`, `.xlsx`, or `.csv` formats. The parser automatically detects the following required columns regardless of column order:
+
+| Column Name | Description |
+| :--- | :--- |
+| **Date (Spent)** or **Date** | Primary temporal key used for grouping data into monthly intervals (X-Axis). |
+| **User** | Identifier for the developer resource, used for the utilization matrix. |
+| **Project** | Grouping key for the stacked chart segments. |
+| **Units** | Numerical value representing the billable hours. |
+
+**File Validation:** The application validates uploaded files to ensure they contain the required columns and valid data. If a file doesn't match the expected format, an error message will be displayed with instructions. A sample template file (`sample-template.csv`) is available for download on the upload page to help you structure your data correctly.
+
+## Usage Guide
+
+### Standard Workflow
+
+1. **Deployment:** Clone the repo and serve it with a local web server (localhost or vhost).
+2. **Launch:** Open the site in a browser (Google Chrome, Microsoft Edge, Firefox, or Safari).
+3. **Data Ingestion:** Drag and drop the target Cost Report file into the designated upload area.
+4. **Analysis:** The dashboard will render immediately upon successful file parsing.
+5. **Export:** Select "Save Image" to export the visual data for external reporting.
+
+**Quick server options (choose one):**
+- `python -m http.server 8000` then open `http://localhost:8000/`
+- `npx serve` then open the printed localhost URL
+
+### Advanced Features
+
+#### Quick Reload with URL Parameters
+
+Create bookmarkable URLs for frequently analyzed reports:
+
+```
+http://localhost:8000/index.html?upload="filename.xls"
+```
+
+**Example:**
+```
+http://localhost:8000/index.html?upload="cost-report-2026-01-28.xls"
+```
+
+**How it works:**
+1. Load a file normally (drag & drop or click to upload)
+2. Click "Copy URL" button in the footer
+3. Paste and save the URL as a browser bookmark
+4. Next time you open the bookmark:
+   - If the file was cached (within 24 hours), it loads automatically
+   - Otherwise, the application shows a message prompting you to upload the file
+5. Access any of your 5 most recent files from the "Recently Uploaded Files" list
+
+#### Automatic File Caching
+
+- Files are automatically cached in browser storage (IndexedDB)
+- **Up to 5 most recent files** are retained automatically
+- Cached files remain valid for **24 hours**
+- Enables instant reload without re-uploading
+- **Recently Uploaded Files list** on the upload page shows:
+  - File name with clickable reload
+  - Number of data rows processed
+  - Time since upload (e.g., "5m ago", "2h ago")
+- **Clear Cache** button to remove all cached files with confirmation
+- Oldest files are automatically removed when the 5-file limit is reached
+
+#### Supabase Integration
+
+The application supports direct synchronization with a Supabase database. This allows for live project tracking without manual file uploads.
+
+- **Direct API Connection:** Connect via your Supabase URL and Anon/Public Key.
+- **Configurable Range:** Select specific date ranges to fetch from the database.
+- **Intelligent Sorting:** Data is fetched **newest-first** from the database.
+- **Persistence:** Credentials and fetched data are cached securely in your browser for 365 days.
+- **Row Limit:** To ensure performance, the sync is limited to the **1,000 most recent rows** per fetch.
+
+##### Database Schema Requirements
+
+To function as a valid data source, your Supabase table should be named `openproject_timeentries` and follow this structure:
+
+```sql
+create table public.openproject_timeentries (
+  id bigint generated by default as identity primary key,
+  date_spent date not null,       -- Maps to 'Date'
+  "user" text not null,           -- Maps to 'User'
+  project text not null,          -- Maps to 'Project'
+  hours numeric not null,         -- Maps to 'Units'
+  created_at timestamptz default now()
+);
+
+-- Recommended indexes for performance
+create index idx_op_date on public.openproject_timeentries (date_spent);
+create index idx_op_user on public.openproject_timeentries ("user");
+create index idx_op_project on public.openproject_timeentries (project);
+```
+
+> **Note:** For automated sync from OpenProject to Supabase, refer to the documentation in the `/supabase` directory of this repository.
+
+## Technical Architecture
+
+This tool is a static web app (HTML + CSS + JS assets) to ensure maximum portability and ease of distribution. It leverages the following libraries via CDN:
+
+* **SheetJS (xlsx):** Enterprise-grade parsing for spreadsheet data structures.
+* **Chart.js:** A flexible charting library for rendering responsive, interactive visualizations.
+* **Tailwind CSS:** A utility-first CSS framework for rapid, responsive UI development.
+* **Phosphor Icons:** A clean, consistent icon family for the user interface.
+
+## Project Structure
+
+The repository is organized for easy onboarding and straightforward edits:
+
+```
+index.html
+assets/
+  css/
+    app.css
+  img/
+    snapshot.png
+  js/
+    boot.js
+    charts.js
+    data-processing.js
+    dom.js
+    scroll.js
+    state.js
+    storage.js
+    tables.js
+    ui.js
+    utils.js
+README.md
+```
+
+**Assets at a glance:**
+- `assets/css/app.css`: Core styling and custom UI behaviors (dark mode, sticky columns, floating headers).
+- `assets/js/boot.js`: App bootstrap, database initialization, and event wiring on page load.
+- `assets/js/charts.js`: Chart rendering, styling, and PNG export logic.
+- `assets/js/data-processing.js`: File parsing, schema detection, and data normalization.
+- `assets/js/dom.js`: Centralized DOM references and cache.
+- `assets/js/scroll.js`: Scroll navigation and smart sticky header orchestration.
+- `assets/js/state.js`: Shared app state and globals.
+- `assets/js/storage.js`: IndexedDB management, file caching (5 files, 24h), URL parameters, and cache operations.
+- `assets/js/tables.js`: Project and developer table rendering.
+- `assets/js/ui.js`: View switching, chart toggle, and modal dialogs (custom confirm).
+- `assets/js/utils.js`: Shared helpers (formatting, colors, time display, escaping).
+- `assets/img/snapshot.png`: README screenshot for quick product context.
+
+## System Notes
+
+* **Data Filtration:** Entries with zero hours are programmatically filtered out to ensure visualization integrity.
+* **Unit Formatting:** All numerical values are treated as hours (h) by default.
+* **Date Compatibility:** The system supports both Excel serial date formats and standard ISO string formats (e.g., YYYY-MM-DD).
+
+---
+
+© darkcolonist@gmail.com
