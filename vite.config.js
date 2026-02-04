@@ -13,7 +13,31 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: 'dist'
+    outDir: 'dist',
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('exceljs')) {
+              return 'vendor-exceljs';
+            }
+            if (id.includes('xlsx')) {
+              return 'vendor-xlsx';
+            }
+            if (id.includes('chart.js')) {
+              return 'vendor-charts';
+            }
+            if (id.includes('@phosphor-icons')) {
+              return 'vendor-phosphor';
+            }
+            if (id.includes('air-datepicker')) {
+              return 'vendor-datepicker';
+            }
+            return 'vendor'; // all other node_modules (vue, vue-router, etc.)
+          }
+        }
+      }
+    }
   },
   optimizeDeps: {
     entries: ['./index.html']
