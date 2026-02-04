@@ -3,37 +3,10 @@ body {
     color: #f1f5f9;
 }
 
-/* Preact App Container Styles */
-#app {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Loading state before Preact mounts */
-#app:empty::before {
-    content: '';
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 48px;
-    height: 48px;
-    border: 4px solid rgba(59, 130, 246, 0.2);
-    border-top-color: #3b82f6;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to {
-        transform: translate(-50%, -50%) rotate(360deg);
-    }
-}
-
 .drag-active {
-    border-color: #3b82f6 !important;
-    background-color: rgba(59, 130, 246, 0.1) !important;
+    border-color: #3b82f6;
+    background-color: #1e293b;
+    transform: scale(1.01);
 }
 
 /* Custom scrollbar for dark mode */
@@ -77,21 +50,6 @@ body {
     position: relative;
     overflow-x: auto;
     overflow-y: visible;
-    scrollbar-width: thin;
-    scrollbar-color: #334155 transparent;
-}
-
-.table-scroll-wrapper::-webkit-scrollbar {
-    height: 6px;
-}
-
-.table-scroll-wrapper::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.table-scroll-wrapper::-webkit-scrollbar-thumb {
-    background-color: #334155;
-    border-radius: 3px;
 }
 
 /* Floating sticky header */
@@ -99,11 +57,11 @@ body {
     position: sticky;
     top: 0;
     z-index: 30;
-    background-color: #1e293b;
-    /* Match bg-slate-800 */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    background-color: #0f172a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     opacity: 0;
     visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
     max-height: 0;
     overflow: hidden;
 }
@@ -138,8 +96,11 @@ body {
 /* Nav Button Active State */
 .nav-btn.active {
     background-color: #3b82f6 !important;
+    /* phBlue */
     color: white !important;
     border-color: #3b82f6 !important;
+    transform: scale(1.15);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
 }
 
 /* Chart Section Slide Animation */
@@ -166,29 +127,12 @@ body {
 .chart-legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0 1rem;
+    gap: 8px;
+    padding: 0 16px;
     margin-top: 8px;
     max-height: 80px;
     overflow-y: auto;
     justify-content: center;
-}
-
-/* Animation utilities */
-.animate-in {
-    animation: animateIn 0.2s ease-out;
-}
-
-@keyframes animateIn {
-    from {
-        opacity: 0;
-        transform: translateY(-4px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 .legend-item {
@@ -351,93 +295,150 @@ select {
 
 /* Air Datepicker Customization */
 .air-datepicker {
-    --adp-background-color: #1e293b;
+    --adp-background-color: #0f172a;
     --adp-color: #f1f5f9;
     --adp-color-secondary: #94a3b8;
     --adp-accent-color: #3b82f6;
-    --adp-border-color: #334155;
-    --adp-border-color-inner: #334155;
+    --adp-border-color: #1e293b;
+    --adp-border-color-inner: #1e293b;
     --adp-cell-background-color-selected: #3b82f6;
     --adp-cell-background-color-selected-hover: #2563eb;
     --adp-cell-background-color-in-range: rgba(59, 130, 246, 0.15);
     --adp-cell-background-color-in-range-hover: rgba(59, 130, 246, 0.25);
     --adp-day-name-color: #3b82f6;
 
-    background-color: #1e293b !important;
-    border: 1px solid #334155 !important;
-    border-radius: 12px !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
-    width: 250px !important;
-    /* Fixed width for better layout */
-    z-index: 1000 !important;
+    font-family: inherit;
+    border: none;
+    background-color: var(--adp-background-color) !important;
+    background: var(--adp-background-color) !important;
+    opacity: 1 !important;
+    width: 100% !important;
 }
 
 .air-datepicker-nav,
 .air-datepicker-body,
-.air-datepicker-content,
 .air-datepicker-footer {
-    background-color: #1e293b !important;
-    padding: 0 !important;
+    background-color: var(--adp-background-color) !important;
 }
 
-.air-datepicker-nav {
-    border-bottom: 1px solid #334155 !important;
-    padding: 10px !important;
+.air-datepicker-cell.-month- {
+    height: auto !important;
+    border-radius: 0 !important;
+    font-weight: 500;
+    font-size: 13px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    margin: 0 !important;
+}
+
+.air-datepicker-body--cells.-months- {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    grid-gap: 0 !important;
+}
+
+.air-datepicker-cell.-disabled- {
+    opacity: 0.15 !important;
+    text-decoration: line-through;
+}
+
+.air-datepicker-cell.-range-from- {
+    border-radius: 12px 0 0 12px !important;
+    background: var(--adp-cell-background-color-selected) !important;
+}
+
+.air-datepicker-cell.-range-to- {
+    border-radius: 0 12px 12px 0 !important;
+    background: var(--adp-cell-background-color-selected) !important;
+}
+
+/* Individual month (not range) should be fully rounded */
+.air-datepicker-cell.-selected-.-range-from-.-range-to- {
+    border-radius: 12px !important;
 }
 
 .air-datepicker-nav--title,
 .air-datepicker-nav--title i {
     color: #f1f5f9 !important;
     font-weight: 700 !important;
-    display: flex !important;
-    gap: 4px !important;
-    white-space: nowrap !important;
+    background: transparent !important;
 }
 
-.air-datepicker-body {
-    padding: 10px !important;
+.air-datepicker-nav--title:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
 }
 
-.air-datepicker-body--cells.-months- {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    grid-gap: 5px !important;
+.air-datepicker-nav--action:hover {
+    background: #1e293b !important;
 }
 
-.air-datepicker-body--cells.-years-,
-.air-datepicker-body--cells.-decades- {
-    display: grid !important;
-    grid-template-columns: repeat(4, 1fr) !important;
-    grid-gap: 10px 5px !important;
-}
-
-.air-datepicker-cell {
-    border-radius: 8px !important;
-    height: 36px !important;
-    font-size: 13px !important;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    color: #94a3b8;
-    cursor: pointer;
-}
-
-.air-datepicker-cell.-year- {
-    height: 48px !important;
-}
-
-.air-datepicker-cell:hover {
-    background: #334155 !important;
-    color: #fff !important;
+.air-datepicker-cell.-current- {
+    color: #3b82f6 !important;
+    font-weight: 700;
 }
 
 .air-datepicker-cell.-selected- {
-    background-color: #3b82f6 !important;
+    color: white !important;
+    font-weight: 700;
+    border-radius: 8px !important;
+}
+
+.air-datepicker-cell.-month- {
+    color: #94a3b8;
+}
+
+.air-datepicker-cell.-month-.-selected- {
     color: #fff !important;
 }
 
-.air-datepicker--pointer {
-    display: none !important;
+/* Dark Datepicker Dropdown Styles */
+.dark-datepicker {
+    --adp-background-color: #1e293b;
+    --adp-color: #e2e8f0;
+    --adp-accent-color: #3b82f6;
+    --adp-color-secondary: #64748b;
+    --adp-border-color: #334155;
+    --adp-border-color-inner: #334155;
+    --adp-cell-background-color-hover: #334155;
+    --adp-cell-background-color-selected: #3b82f6;
+    --adp-cell-background-color-selected-hover: #2563eb;
+    --adp-nav-arrow-color: #94a3b8;
+    --adp-day-name-color: #60a5fa;
+    font-family: inherit;
+    background-color: #1e293b !important;
+    /* Use background-color with solid value */
+    background: #1e293b !important;
+    border: 1px solid #334155 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark-datepicker .air-datepicker-nav {
+    border-bottom: 1px solid #334155;
+    padding: 12px;
+}
+
+.dark-datepicker .air-datepicker-nav--title {
+    color: #f1f5f9 !important;
+    background: transparent !important;
+}
+
+.dark-datepicker .air-datepicker-cell {
+    border-radius: 8px;
+}
+
+.dark-datepicker .air-datepicker-cell.-month- {
+    padding: 8px 4px;
+}
+
+.dark-datepicker .air-datepicker-cell:hover {
+    background: #334155;
+    color: #f1f5f9;
+}
+
+.dark-datepicker .air-datepicker--pointer {
+    display: none;
 }
 
 /* Table sticky header improvements */
