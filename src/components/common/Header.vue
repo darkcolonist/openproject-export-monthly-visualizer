@@ -96,10 +96,8 @@ onUnmounted(() => {
 
 <template>
     <header class="bg-slate-900 border-b border-slate-800 px-6 py-2 flex justify-between items-center shadow-sm shrink-0 z-40 relative">
-        <div class="flex items-center gap-3">
-            <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500/20 to-blue-600/5 text-blue-400 rounded-xl shrink-0">
-                <i class="ph ph-calendar-check text-2xl"></i>
-            </div>
+        <div class="flex items-center gap-3 md:gap-4">
+            <i class="ph ph-calendar-check text-3xl text-blue-500 shrink-0"></i>
             <div class="hidden md:block">
                 <h1 class="font-bold text-base leading-tight text-slate-100">Monthly Project Report</h1>
                 <p class="text-[10px] text-slate-400">Project Trends & Developer Breakdown</p>
@@ -112,15 +110,15 @@ onUnmounted(() => {
                 <button 
                     @click="dateFilterOpen = !dateFilterOpen"
                     :class="[
-                        'flex items-center gap-2 px-3 md:px-4 h-[38px] bg-slate-800 border border-slate-700 rounded-l-xl hover:bg-slate-700 transition-all z-10 relative focus:z-20',
+                        'flex items-center gap-2 px-3 md:px-4 h-[38px] bg-slate-800 border border-slate-700 rounded-l-xl hover:bg-slate-700 transition-all z-10 relative focus:z-20 hover:text-blue-400',
                         dateFilterOpen ? 'text-blue-400 bg-slate-700' : 'text-slate-300'
                     ]"
                     title="Date Range"
                 >
-                    <i class="ph ph-calendar text-lg text-blue-400"></i>
+                    <i class="ph ph-calendar text-lg"></i>
                     <div class="hidden md:flex flex-col items-start leading-none gap-0.5">
                          <!-- Simplified layout for group context -->
-                         <span class="text-[9px] uppercase font-bold text-slate-500">Range</span>
+                         <span class="text-[9px] uppercase font-bold text-slate-500 group-hover:text-blue-400/70 transition-colors">Range</span>
                          <span class="text-[10px] font-medium">{{ formatDateRange }}</span>
                     </div>
                 </button>
@@ -137,7 +135,7 @@ onUnmounted(() => {
                 ]"
                 :title="chartVisible ? 'Hide Graph' : 'Show Graph'"
             >
-                <i :class="['ph text-lg', chartVisible ? 'ph-chart-bar' : 'ph-chart-bar-horizontal']"></i>
+                <i :class="['ph text-lg', chartVisible ? 'ph-eye' : 'ph-eye-slash']"></i>
                 <span class="hidden md:inline text-xs font-medium">{{ chartVisible ? 'Hide' : 'Show' }} Graph</span>
             </button>
 

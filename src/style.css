@@ -44,3 +44,18 @@
 .dark-datepicker .air-datepicker-cell.-current-.-selected- {
   color: #ffffff;
 }
+
+/* Disabled/Unselectable cells - Greyed out */
+.dark-datepicker .air-datepicker-cell.-disabled-,
+.dark-datepicker .air-datepicker-cell.-disabled-:hover {
+  opacity: 0.2;
+  color: #64748b !important;
+  /* Slate 500 */
+  pointer-events: none;
+  background: transparent !important;
+}
+
+/* Hide the pointer diamond */
+.dark-datepicker .air-datepicker--pointer {
+  display: none !important;
+}
