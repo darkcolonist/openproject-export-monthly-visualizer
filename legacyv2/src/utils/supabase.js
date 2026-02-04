@@ -2,7 +2,8 @@
  * Supabase Integration
  * Handles data fetching from Supabase
  */
-import { setReportData, setLoading, activeSource } from '../store/index.js';
+import { setReportData, setLoading, activeSource } from 'app/store.js';
+import { goToDashboard } from 'app/router.js';
 
 const TABLE_NAME = 'openproject_timeentries';
 const ROW_LIMIT = 1000;
@@ -142,8 +143,7 @@ export async function syncSupabase(url, key, startDate = null, endDate = null) {
         activeSource.value = 'supabase';
 
         setLoading(false);
-        // Note: Router navigation is handled by components now, 
-        // unlike legacy where it was global.
+        goToDashboard('supabase');
 
         return {
             success: true,

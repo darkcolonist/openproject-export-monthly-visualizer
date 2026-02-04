@@ -1,0 +1,1 @@
+.floating-sticky-header{position:sticky;top:0;z-index:50;width:100%;pointer-events:none}.floating-sticky-header.active{pointer-events:auto}.floating-header-inner{overflow:hidden;background-color:#1e293b;box-shadow:0 4px 6px -1px #0000001a,0 2px 4px -1px #0000000f}
