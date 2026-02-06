@@ -12,16 +12,17 @@ import {
     toggleChart, 
     chartVisible, 
     setSupabaseConfig, 
+    setSpacesConfig,
     clearData, 
     supabaseUrl, 
     supabaseKey,
     spacesConnected,
     showSpacesModal
 } from '@/store';
-import { syncSupabase, clearSupabaseConfig } from '@/utils/supabase';
-import { deleteCachedFile } from '@/utils/storage';
 import DateFilter from './DateFilter.vue';
 import { goToUpload } from '@/router';
+import { getSupabaseConfig } from '@/utils/supabase';
+import { getSpacesConfig } from '@/utils/spaces';
 
 // In this Vue 3 implementation, routing is simplified via props or emits.
 // We assume 'showDashboardControls' is true if activeData exists, effectively.
@@ -46,34 +47,65 @@ const handleMenuToggle = (e) => {
     toggleSettings();
 };
 
-const handleSync = async () => {
-    toggleSettings();
-    try {
-        await syncSupabase(supabaseUrl.value, supabaseKey.value, startDate.value, endDate.value);
-    } catch (e) {
-        alert('Sync failed: ' + e.message);
-    }
-};
-
-// Emit event for "New File" to tell parent to go back to upload
-// const emit = defineEmits(['reset']);
-
-const handleDisconnect = async () => {
-    if (confirm('Are you sure you want to disconnect Supabase?')) {
-        clearSupabaseConfig();
-        await deleteCachedFile('SUPABASE_CACHE');
-        setSupabaseConfig(null, null);
-        clearData();
-        toggleSettings();
-        // Return to upload
-        goToUpload();
-    }
-};
-
 const handleNewFile = () => {
     // Clear current session data if desired, or just navigate back
     clearData(); 
     goToUpload();
+};
+
+const exportConfig = () => {
+    const config = {
+        supabase: getSupabaseConfig(),
+        spaces: getSpacesConfig()
+    };
+    
+    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `openproject-config-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toggleSettings();
+};
+
+const fileInputRef = ref(null);
+
+const triggerImport = () => {
+    fileInputRef.value?.click();
+};
+
+const handleImport = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            const config = JSON.parse(event.target.result);
+            
+            if (config.supabase) {
+                localStorage.setItem('supabaseConfig', JSON.stringify(config.supabase));
+                setSupabaseConfig(config.supabase.url, config.supabase.key);
+            }
+            
+            if (config.spaces) {
+                localStorage.setItem('spacesConfig', JSON.stringify(config.spaces));
+                setSpacesConfig(config.spaces);
+            }
+            
+            alert('Configuration imported successfully!');
+            toggleSettings();
+            // Reset file input
+            e.target.value = '';
+        } catch (err) {
+            console.error('Import error:', err);
+            alert('Failed to import configuration: Invalid JSON');
+        }
+    };
+    reader.readAsText(file);
 };
 
 const settingsMenuRef = ref(null);
@@ -197,22 +229,30 @@ onUnmounted(() => {
                             <span>{{ spacesConnected ? 'Configure Spaces' : 'Setup DO Spaces' }}</span>
                         </button>
 
-                        <template v-if="supabaseConnected">
-                            <button 
-                                @click="handleSync"
-                                class="flex items-center gap-3 px-3 py-2 text-xs text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors group"
-                            >
-                                <i class="ph ph-arrows-clockwise group-hover:animate-spin"></i>
-                                <span>Sync Now</span>
-                            </button>
-                            <button 
-                                @click="handleDisconnect"
-                                class="flex items-center gap-3 px-3 py-2 text-xs text-red-400 hover:bg-red-500/10 rounded-lg transition-colors group"
-                            >
-                                <i class="ph ph-plugs-off group-hover:scale-110 transition-transform"></i>
-                                <span>Disconnect Supabase</span>
-                            </button>
-                        </template>
+                        <div class="my-1 border-t border-slate-800"></div>
+
+                        <button 
+                            @click="exportConfig"
+                            class="flex items-center gap-3 px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-lg transition-colors group"
+                        >
+                            <i class="ph ph-download-simple text-amber-400 group-hover:scale-110 transition-transform"></i>
+                            <span>Export Configuration</span>
+                        </button>
+
+                        <button 
+                            @click="triggerImport"
+                            class="flex items-center gap-3 px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-lg transition-colors group"
+                        >
+                            <i class="ph ph-upload-simple text-purple-400 group-hover:scale-110 transition-transform"></i>
+                            <span>Import Configuration</span>
+                            <input 
+                                type="file" 
+                                ref="fileInputRef" 
+                                @change="handleImport" 
+                                accept=".json" 
+                                class="hidden" 
+                            />
+                        </button>
                     </div>
                 </div>
             </div>

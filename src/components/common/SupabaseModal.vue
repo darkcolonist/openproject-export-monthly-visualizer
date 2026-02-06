@@ -1,19 +1,22 @@
 <script setup>
 import { ref, onMounted, watch, onUnmounted } from 'vue';
 import { 
-    supabaseModalOpen, 
+    supabaseModalOpen,
     hideSupabaseModal, 
     startDate, 
     endDate,
     setDateRange,
-    setSupabaseConfig as updateStoreConfig
+    setSupabaseConfig as updateStoreConfig,
+    clearData
 } from '@/store';
 import { 
     fetchSupabaseCount, 
     syncSupabase, 
     getSupabaseConfig, 
-    saveSupabaseConfig 
+    saveSupabaseConfig,
+    clearSupabaseConfig
 } from '@/utils/supabase';
+import { deleteCachedFile } from '@/utils/storage';
 import AirDatepicker from 'air-datepicker';
 import localeEn from 'air-datepicker/locale/en';
 import 'air-datepicker/air-datepicker.css';
@@ -180,12 +183,34 @@ const handleSave = async () => {
         
         hideSupabaseModal();
         goToDashboard('supabase');
-        // Emit an event if needed? Store handles state, so maybe not required if App.vue watches store.
     } catch (error) {
         console.error('Supabase sync error:', error);
         alert('Failed to sync data: ' + error.message);
     } finally {
         isSyncing.value = false;
+    }
+};
+
+const handleSyncNow = async () => {
+    if (!isConnected.value) return;
+    isSyncing.value = true;
+    try {
+        await syncSupabase(url.value, key.value, localStart.value, localEnd.value);
+    } catch (error) {
+        alert('Sync failed: ' + error.message);
+    } finally {
+        isSyncing.value = false;
+    }
+};
+
+const handleDisconnect = async () => {
+    if (confirm('Are you sure you want to disconnect Supabase?')) {
+        clearSupabaseConfig();
+        await deleteCachedFile('SUPABASE_CACHE');
+        updateStoreConfig(null, null);
+        clearData();
+        hideSupabaseModal();
+        goToUpload();
     }
 };
 
@@ -317,6 +342,26 @@ const handleKeyChange = (e) => {
                                 Warning: Found {{ rowCount.toLocaleString() }} rows. Only 1,000 rows will be fetched. Consider narrowing your date range.
                             </p>
                         </div>
+                    </div>
+
+                    <!-- Additional Actions for Connected State -->
+                    <div class="pt-2 flex flex-col gap-2">
+                        <button 
+                            @click="handleSyncNow"
+                            :disabled="isSyncing"
+                            class="flex items-center justify-center gap-2 w-full py-2.5 text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/20 rounded-xl hover:bg-blue-500/20 transition-all"
+                        >
+                            <i :class="['ph ph-arrows-clockwise text-sm', isSyncing ? 'animate-spin' : '']"></i>
+                            {{ isSyncing ? 'Syncing...' : 'Sync Now' }}
+                        </button>
+                        
+                        <button 
+                            @click="handleDisconnect"
+                            class="flex items-center justify-center gap-2 w-full py-2.5 text-xs font-bold text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition-all"
+                        >
+                            <i class="ph ph-plugs-off text-sm"></i>
+                            Disconnect Supabase
+                        </button>
                     </div>
                 </div>
 
