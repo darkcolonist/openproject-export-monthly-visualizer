@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted } from 'vue';
+import { spacesConnected } from '@/store';
 
 const props = defineProps(['activeSection']);
 const emit = defineEmits(['scrollTo']);
@@ -25,6 +26,10 @@ const scrollToSection = (sectionId) => {
     }
     emit('scrollTo', sectionId);
 };
+
+const handleUpload = () => {
+    emit('upload');
+};
 </script>
 
 <template>
@@ -49,5 +54,15 @@ const scrollToSection = (sectionId) => {
             title="Insights">
             <i class="ph ph-chart-bar"></i>
         </button>
+
+        <template v-if="spacesConnected">
+            <div class="h-px bg-slate-800 my-1 mx-2"></div>
+
+            <button @click="handleUpload"
+                class="nav-btn w-10 h-10 rounded-full border border-emerald-500/50 shadow-lg bg-slate-800 text-emerald-400 hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center group"
+                title="Upload to DO Spaces">
+                <i class="ph ph-cloud-arrow-up text-lg"></i>
+            </button>
+        </template>
     </div>
 </template>

@@ -41,7 +41,7 @@ const routes = [
         }
     },
     {
-        path: '/dashboard/:filename',
+        path: '/dashboard/:filename(.*)',
         name: 'dashboard-file',
         component: () => import('@/views/Dashboard.vue'),
         beforeEnter: async (to, from, next) => {
@@ -64,6 +64,41 @@ const routes = [
                     // Allow UI to tick
                     await delay(50);
 
+                    // 1. Check if filename is a URL (DO Spaces)
+                    let decodedFilename = decodeURIComponent(filename);
+                    console.log('[Router] Decoded filename:', decodedFilename);
+
+                    if (decodedFilename.startsWith('spaces/')) {
+                        decodedFilename = decodedFilename.replace('spaces/', '');
+                        console.log('[Router] Stripped spaces/ prefix:', decodedFilename);
+                    }
+
+                    if (decodedFilename.startsWith('http://') || decodedFilename.startsWith('https://')) {
+                        console.log('[Router] Fetching from URL:', decodedFilename);
+                        const response = await fetch(decodedFilename);
+                        if (!response.ok) throw new Error('Failed to fetch data from URL');
+
+                        // Parse as CSV
+                        // parseBuffer supports ArrayBuffer/Buffer
+                        const buffer = await response.arrayBuffer();
+                        console.log('[Router] Buffer received, length:', buffer.byteLength);
+
+                        const normalized = await parseBuffer(buffer, decodedFilename);
+                        console.log('[Router] Normalized data count:', normalized.length);
+
+                        if (normalized.length > 0) {
+                            setReportData(normalized, decodedFilename.split('/').pop());
+                            activeSource.value = 'file';
+                            // Crucial: we need to ensure the route parameter reflects reality if we push
+                            console.log('[Router] Success, proceeding to Dashboard');
+                            next();
+                            return;
+                        } else {
+                            throw new Error('No valid data found in URL');
+                        }
+                    }
+
+                    // 2. Regular cached file or Supabase
                     // Map generic 'supabase' route param to the actual storage key
                     const storageKey = (filename === 'supabase') ? 'SUPABASE_CACHE' : filename;
                     const cached = await loadCachedFile(storageKey);

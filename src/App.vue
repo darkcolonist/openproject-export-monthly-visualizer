@@ -5,11 +5,13 @@ import { hasData, isLoading, loadingText, clearData } from '@/store';
 import Header from '@/components/common/Header.vue';
 import LoadingOverlay from '@/components/common/LoadingOverlay.vue';
 import SupabaseModal from '@/components/common/SupabaseModal.vue';
+import SpacesModal from '@/components/common/SpacesModal.vue';
 import { goToUpload } from '@/router';
 
 import { onMounted } from 'vue';
 import { getSupabaseConfig } from '@/utils/supabase';
-import { setSupabaseConfig, setDateRange } from '@/store';
+import { getSpacesConfig } from '@/utils/spaces';
+import { setSupabaseConfig, setSpacesConfig, setDateRange } from '@/store';
 
 // With router, we should rely on router-view mostly
 const route = useRoute();
@@ -33,6 +35,12 @@ onMounted(() => {
             setDateRange(config.startDate, config.endDate);
         }
     }
+
+    // Restore Spaces Config
+    const spacesConfig = getSpacesConfig();
+    if (spacesConfig) {
+        setSpacesConfig(spacesConfig);
+    }
 });
 </script>
 
@@ -41,6 +49,7 @@ onMounted(() => {
         <!-- Global Components -->
         <LoadingOverlay v-if="isLoading" :text="loadingText" />
         <SupabaseModal />
+        <SpacesModal />
 
         <!-- Header -->
         <Header @reset="handleReset" />

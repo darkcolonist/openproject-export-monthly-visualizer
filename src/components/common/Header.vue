@@ -14,7 +14,9 @@ import {
     setSupabaseConfig, 
     clearData, 
     supabaseUrl, 
-    supabaseKey 
+    supabaseKey,
+    spacesConnected,
+    showSpacesModal
 } from '@/store';
 import { syncSupabase, clearSupabaseConfig } from '@/utils/supabase';
 import { deleteCachedFile } from '@/utils/storage';
@@ -166,9 +168,15 @@ onUnmounted(() => {
                 
                 <div ref="settingsMenuRef" v-if="settingsMenuOpen" class="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50">
                     <div class="p-2 flex flex-col gap-1">
-                        <div v-if="supabaseConnected" class="flex items-center gap-2 px-3 py-2 mb-1 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                            <div class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
-                            <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Supabase Connected</span>
+                        <div v-if="supabaseConnected || spacesConnected" class="mb-3 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex flex-col gap-2">
+                            <div v-if="supabaseConnected" class="flex items-center gap-2">
+                                <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                                <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Supabase Connected</span>
+                            </div>
+                            <div v-if="spacesConnected" class="flex items-center gap-2">
+                                <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                                <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Spaces Configured</span>
+                            </div>
                         </div>
 
                         <h4 class="px-3 py-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Data Source</h4>
@@ -179,6 +187,14 @@ onUnmounted(() => {
                         >
                             <i class="ph ph-database text-blue-400 group-hover:scale-110 transition-transform"></i>
                             <span>{{ supabaseConnected ? 'Configure Supabase' : 'Connect Supabase' }}</span>
+                        </button>
+
+                        <button 
+                            @click="showSpacesModal(); toggleSettings();"
+                            class="flex items-center gap-3 px-3 py-2 text-xs text-slate-300 hover:bg-slate-800 rounded-lg transition-colors group"
+                        >
+                            <i class="ph ph-cloud-arrow-up text-emerald-400 group-hover:scale-110 transition-transform"></i>
+                            <span>{{ spacesConnected ? 'Configure Spaces' : 'Setup DO Spaces' }}</span>
                         </button>
 
                         <template v-if="supabaseConnected">

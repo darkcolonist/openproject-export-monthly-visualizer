@@ -20,10 +20,19 @@ export const supabaseUrl = ref(null);
 export const supabaseKey = ref(null);
 export const supabaseConnected = ref(false);
 
+// ===== DigitalOcean Spaces Configuration =====
+export const spacesAccessKey = ref(null);
+export const spacesSecretKey = ref(null);
+export const spacesEndpoint = ref(null);
+export const spacesBucket = ref(null);
+export const spacesPath = ref(null);
+export const spacesConnected = ref(false);
+
 // ===== UI State =====
 export const chartVisible = ref(true);
 export const settingsMenuOpen = ref(false);
 export const supabaseModalOpen = ref(false);
+export const spacesModalOpen = ref(false);
 
 // ===== Derived State (Computed) =====
 export const filteredData = computed(() => {
@@ -94,6 +103,15 @@ export function setSupabaseConfig(url, key) {
     supabaseConnected.value = !!(url && key);
 }
 
+export function setSpacesConfig(config) {
+    spacesAccessKey.value = config.accessKey;
+    spacesSecretKey.value = config.secretKey;
+    spacesEndpoint.value = config.endpoint;
+    spacesBucket.value = config.bucket;
+    spacesPath.value = config.path;
+    spacesConnected.value = !!(config.accessKey && config.secretKey && config.endpoint && config.bucket);
+}
+
 export function toggleSettings() {
     settingsMenuOpen.value = !settingsMenuOpen.value;
 }
@@ -104,6 +122,14 @@ export function showSupabaseModal() {
 
 export function hideSupabaseModal() {
     supabaseModalOpen.value = false;
+}
+
+export function showSpacesModal() {
+    spacesModalOpen.value = true;
+}
+
+export function hideSpacesModal() {
+    spacesModalOpen.value = false;
 }
 
 export function toggleChart() {
