@@ -44,29 +44,16 @@ export async function parseBuffer(buffer, fileName = '') {
         // Strategy: Load data into a standard "Array of Arrays" (rows) structure
         // independent of the source library.
 
-        if (lowerName.endsWith('.xls')) {
-            // Fallback: Use XLSX for legacy binary files
+        if (lowerName.endsWith('.xls') || lowerName.endsWith('.csv')) {
+            // Use XLSX for .xls and .csv (more robust in browser)
             const workbook = XLSX.read(buffer, { type: 'array' });
-            // Assume first sheet
             const firstSheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheetName];
-            // header: 1 returns array of arrays [ ['a','b'], ['1','2'] ]
             rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
         } else {
-            // Standard: Use ExcelJS for XLSX and CSV
+            // Use ExcelJS for XLSX
             const workbook = new ExcelJS.Workbook();
-
-            if (lowerName.endsWith('.csv')) {
-                if (buffer instanceof ArrayBuffer) {
-                    // ExcelJS browser CSV read workaround
-                    await workbook.csv.read(new Blob([buffer]));
-                } else {
-                    await workbook.csv.read(buffer);
-                }
-            } else {
-                // XLSX
-                await workbook.xlsx.load(buffer);
-            }
+            await workbook.xlsx.load(buffer);
 
             const worksheet = workbook.worksheets[0];
             if (!worksheet) {

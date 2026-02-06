@@ -50,6 +50,24 @@ The **Open Project Report Visualizer** is a specialized, client-side web applica
   * *Intelligent Sorting:* Data is fetched newest-first from the database.
   * *Persistence:* Credentials and fetched data are cached securely in your browser.
 
+* **DigitalOcean Spaces Integration:**
+  * *Cloud Hosting:* Upload processed reports directly to DigitalOcean Spaces as CSV files.
+  * *Collaboration:* Generate unique, shareable URLs for others to view the same report instantly.
+  * *High-Fidelity Sharing:* Preserves exact daily data across shared sessions, ensuring consistent reporting views.
+  * *Subpath Support:* Organize uploads into specific folders or subdomains within your bucket (e.g., `project/client-a/`).
+  * *URL-Based Loading:* The application can parse and render reports directly from a public Spaces URL via the custom `#/dashboard/spaces/` hash route.
+
+## Cloud Configuration (DigitalOcean Spaces)
+
+To enable cloud uploads and sharing, configure your Spaces credentials in the **Settings** menu:
+1. **Endpoint**: Your region-specific endpoint (e.g., `https://nyc3.digitaloceanspaces.com`).
+2. **Access/Secret Key**: Your DigitalOcean API credentials.
+3. **Bucket Name**: The target Spaces bucket for storage.
+4. **Subpath (Optional)**: A folder prefix for your uploads.
+
+> [!IMPORTANT]
+> **CORS Configuration:** You must configure your DigitalOcean Spaces bucket to allow cross-origin requests from your application domain. Add a CORS rule allowing `PUT`, `GET`, `OPTIONS`, and `POST` methods with `*` for Origins and Headers for full functionality.
+
 ## Input Specifications
 
 The application is engineered to parse standard Cost Reports exported in `.xls`, `.xlsx`, or `.csv` formats. The parser automatically detects the following required columns regardless of column order:
@@ -100,6 +118,7 @@ This application is built using modern web technologies for performance and main
 * **ExcelJS & XLSX:** Robust parsing for various spreadsheet data structures.
 * **Air Datepicker:** Lightweight and customizable date range picker.
 * **Phosphor Icons:** Consistent and clean iconography.
+* **AWS SDK for JS (S3):** Powering the seamless DigitalOcean Spaces uploads.
 
 ## Project Structure
 

@@ -3,8 +3,17 @@ import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { 
     hasData, 
     filteredData, 
-    chartVisible 
+    chartVisible,
+    rawData,
+    fileName,
+    spacesConnected,
+    spacesAccessKey,
+    spacesSecretKey,
+    spacesEndpoint,
+    spacesBucket,
+    spacesPath
 } from '@/store';
+import { uploadToSpaces } from '@/utils/spaces';
 
 import ChartSection from '@/components/dashboard/ChartSection.vue';
 import ProjectSection from '@/components/dashboard/ProjectSection.vue';
@@ -240,6 +249,45 @@ onUnmounted(() => {
 watch(filteredData, () => {
      setTimeout(updateFloatingHeader, 100);
 });
+
+const uploadUrl = ref(null);
+const rawSpacesUrl = ref(null);
+const isUploading = ref(false);
+
+const handleUploadToSpaces = async () => {
+    if (!spacesConnected.value) {
+        alert('Please configure DigitalOcean Spaces in Settings first.');
+        return;
+    }
+
+    try {
+        isUploading.value = true;
+        const config = {
+            accessKey: spacesAccessKey.value,
+            secretKey: spacesSecretKey.value,
+            endpoint: spacesEndpoint.value,
+            bucket: spacesBucket.value,
+            path: spacesPath.value
+        };
+
+        const url = await uploadToSpaces(rawData.value, fileName.value || 'export', config);
+        rawSpacesUrl.value = url;
+        // Construct the shareable app URL: [origin] / [pathname] / # / dashboard / spaces / [encoded-spaces-url]
+        const baseUrl = window.location.origin + window.location.pathname;
+        const hashBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+        uploadUrl.value = `${hashBase}#/dashboard/spaces/${encodeURIComponent(url)}`;
+    } catch (e) {
+        alert(e.message);
+    } finally {
+        isUploading.value = false;
+    }
+};
+
+const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('URL copied to clipboard!');
+    });
+};
 </script>
 
 <template>
@@ -252,7 +300,52 @@ watch(filteredData, () => {
             <DeveloperSection />
             <InsightsSection />
             <Footer />
-            <FloatingNav :activeSection="activeSection" />
+            <FloatingNav :activeSection="activeSection" @upload="handleUploadToSpaces" />
+
+            <!-- Upload Success Notification -->
+            <div v-if="uploadUrl" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div class="bg-slate-900 border border-emerald-500/30 rounded-2xl p-4 shadow-2xl flex items-center gap-4 max-w-lg">
+                    <div class="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center shrink-0">
+                        <i class="ph ph-check text-emerald-400 text-xl"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold text-slate-100 mb-0.5">Uploaded Successfully!</p>
+                        <a :href="uploadUrl" target="_blank" class="text-[10px] text-slate-400 truncate block hover:text-emerald-400 transition-colors">
+                            {{ uploadUrl }}
+                        </a>
+                    </div>
+                    <div class="flex gap-2">
+                        <button 
+                            @click="copyToClipboard(uploadUrl)"
+                            class="p-2 hover:bg-slate-800 rounded-lg text-emerald-400 transition-colors"
+                            title="Copy Shareable Link"
+                        >
+                            <i class="ph ph-share-network ph-fill text-xl"></i>
+                        </button>
+                        <a 
+                            :href="uploadUrl" 
+                            target="_blank"
+                            class="p-2 hover:bg-slate-800 rounded-lg text-blue-400 transition-colors"
+                            title="Open in new window"
+                        >
+                            <i class="ph ph-arrow-square-out text-xl"></i>
+                        </a>
+                        <button 
+                            @click="copyToClipboard(rawSpacesUrl)"
+                            class="p-2 hover:bg-slate-800 rounded-lg text-blue-400 transition-colors"
+                            title="Copy Direct Spaces Link (CSV)"
+                        >
+                            <i class="ph ph-file-csv text-xl"></i>
+                        </button>
+                        <button 
+                            @click="uploadUrl = null; rawSpacesUrl = null"
+                            class="p-2 hover:bg-slate-800 rounded-lg text-slate-500 hover:text-slate-300 transition-colors"
+                        >
+                            <i class="ph ph-x text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
