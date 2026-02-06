@@ -6,7 +6,12 @@ The **Open Project Report Visualizer** is a specialized, client-side web applica
 
 ## Screenshot
 
-![App snapshot](legacyv2/assets/img/snapshot.png)
+![App snapshot](public/assets/snapshot.png)
+
+## How it works
+
+![Project Infographic](public/assets/infographic.png)
+
 
 ## Key Features
 
