@@ -63,7 +63,7 @@ export const hasData = computed(() => {
 // Detailed map: { [Developer]: { [Project]: { [MonthKey]: hours } } }
 export const detailedMap = computed(() => {
     const map = {};
-    rawData.value.forEach(entry => {
+    filteredData.value.forEach(entry => {
         const dev = entry.user;
         const proj = entry.project;
         const month = entry.date; // Assuming format YYYY-MM
@@ -79,7 +79,7 @@ export const detailedMap = computed(() => {
 // Inverse Detailed map: { [Project]: { [Developer]: { [MonthKey]: hours } } }
 export const projectDetailedMap = computed(() => {
     const map = {};
-    rawData.value.forEach(entry => {
+    filteredData.value.forEach(entry => {
         const dev = entry.user;
         const proj = entry.project;
         const month = entry.date;

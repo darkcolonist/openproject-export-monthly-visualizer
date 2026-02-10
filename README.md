@@ -21,15 +21,15 @@ The **Open Project Report Visualizer** is a specialized, client-side web applica
 
 * **Developer Utilization Matrix:** A comprehensive data table displaying exact hour logs per developer, organized chronologically.
 
-* **Developer Project Insights:** An interactive dashboard section for deep-dive analysis of individual contributions.
-  * *Resource Selection:* Filter data by specific developer to see their multi-month workload trends.
-  * *Project-Specific Drilling:* Narrow down any developer's view to a single project or view their stacked contribution across all projects.
+* **Developer Insights:** An interactive dashboard section for deep-dive analysis of individual contributions.
+  * *Resource Selection:* Filter data by one or multiple developers to see their multi-month workload trends.
+  * *Project-Specific Drilling:* Narrow down the selected developers' view to a single project or view their stacked contribution across all projects.
   * *Instant Hour Totals:* Dropdown selectors display real-time total hour counts for both developers and projects.
-  * *Smart Tooltip Filtering:* Monthly breakdown tooltips automatically hide zero-hour projects for the selected developer.
+  * *Smart Tooltip Filtering:* Monthly breakdown tooltips automatically hide zero-hour projects for the selected developers.
 
-* **Project Developer Insights:** The reciprocal of developer insights, focusing on project-centric analysis.
-  * *Contribution Breakdown:* Select a project to see which developers contributed and their monthly hour distribution.
-  * *Developer Filtering:* Isolate a specific developer's impact on a project's timeline.
+* **Project Insights:** The reciprocal of developer insights, focusing on project-centric analysis.
+  * *Contribution Breakdown:* Select one or more projects to see which developers contributed and their monthly hour distribution.
+  * *Developer Filtering:* Isolate a specific developer's impact on the selected projects' timeline.
   * *Visual Alignment:* Uses a distinct color palette and icons for easy identification.
 
 * **Enhanced Table Navigation:**

@@ -7,11 +7,12 @@ import { getColor } from '@/utils/colors';
 
 Chart.register(...registerables);
 
-const selectedDev = ref('');
+const selectedDevs = ref([]);
 const selectedProj = ref('all');
 const chartRef = ref(null);
 const chartInstance = ref(null);
 const developers = computed(() => getDevelopers(filteredData.value));
+const isDevDropdownOpen = ref(false);
 
 // Calculate totals for developers
 const devTotals = computed(() => {
@@ -33,23 +34,32 @@ const sortedDevs = computed(() => {
 
 // Convert detailedMap (computed) to raw object if needed, but it's already a proxy which is fine for access
 const devProjects = computed(() => {
-    return selectedDev.value && detailedMap.value[selectedDev.value]
-        ? Object.keys(detailedMap.value[selectedDev.value]).sort()
-        : [];
+    if (selectedDevs.value.length === 0) return [];
+    
+    const projects = new Set();
+    selectedDevs.value.forEach(dev => {
+        if (detailedMap.value[dev]) {
+            Object.keys(detailedMap.value[dev]).forEach(p => projects.add(p));
+        }
+    });
+    return Array.from(projects).sort();
 });
 
 const projTotals = computed(() => {
     const totals = {};
-    if (selectedDev.value && detailedMap.value[selectedDev.value]) {
-        Object.entries(detailedMap.value[selectedDev.value]).forEach(([proj, months]) => {
-            totals[proj] = Object.values(months).reduce((a, b) => a + b, 0);
-        });
-    }
+    selectedDevs.value.forEach(dev => {
+        if (detailedMap.value[dev]) {
+            Object.entries(detailedMap.value[dev]).forEach(([proj, months]) => {
+                const projectSum = Object.values(months).reduce((a, b) => a + b, 0);
+                totals[proj] = (totals[proj] || 0) + projectSum;
+            });
+        }
+    });
     return totals;
 });
 
 const renderChart = () => {
-    if (!chartRef.value || !selectedDev.value) {
+    if (!chartRef.value || selectedDevs.value.length === 0) {
         if (chartInstance.value) {
             chartInstance.value.destroy();
             chartInstance.value = null;
@@ -57,31 +67,41 @@ const renderChart = () => {
         return;
     }
 
-    const devData = detailedMap.value[selectedDev.value] || {};
+    // Aggregate data for all selected developers
+    const aggregatedData = {};
+    selectedDevs.value.forEach(dev => {
+        const devData = detailedMap.value[dev] || {};
+        Object.entries(devData).forEach(([proj, months]) => {
+            if (!aggregatedData[proj]) aggregatedData[proj] = {};
+            Object.entries(months).forEach(([m, h]) => {
+                aggregatedData[proj][m] = (aggregatedData[proj][m] || 0) + h;
+            });
+        });
+    });
 
     // Get all months
     const allMonthsSet = new Set();
-    Object.values(devData).forEach(projObj => {
+    Object.values(aggregatedData).forEach(projObj => {
         Object.keys(projObj).forEach(m => allMonthsSet.add(m));
     });
     const sortedMonths = Array.from(allMonthsSet).sort();
 
     // Determine projects to show
-    let projectsToShow = selectedProj.value === 'all' ? Object.keys(devData) : [selectedProj.value];
+    let projectsToShow = selectedProj.value === 'all' ? Object.keys(aggregatedData) : [selectedProj.value];
 
     // Sort by total hours
     projectsToShow = projectsToShow
-        .filter(p => devData[p])
+        .filter(p => aggregatedData[p])
         .map(p => ({
             name: p,
-            total: Object.values(devData[p]).reduce((a, b) => a + b, 0)
+            total: Object.values(aggregatedData[p]).reduce((a, b) => a + b, 0)
         }))
         .sort((a, b) => b.total - a.total)
         .map(p => p.name);
 
     // Build datasets
     const datasets = projectsToShow.map((proj, idx) => {
-        const dataPoints = sortedMonths.map(mKey => devData[proj]?.[mKey] || 0);
+        const dataPoints = sortedMonths.map(mKey => aggregatedData[proj]?.[mKey] || 0);
         return {
             label: proj,
             data: dataPoints,
@@ -143,31 +163,45 @@ const renderChart = () => {
     }));
 };
 
+const toggleDev = (dev) => {
+    const index = selectedDevs.value.indexOf(dev);
+    if (index === -1) {
+        selectedDevs.value = [...selectedDevs.value, dev];
+    } else {
+        selectedDevs.value = selectedDevs.value.filter(d => d !== dev);
+    }
+};
+
 const handleDevChange = () => {
+    // This is no longer used by select, but kept for logic if needed
     selectedProj.value = 'all';
 };
 
-watch([selectedDev, selectedProj, detailedMap], () => {
+watch([selectedDevs, selectedProj, detailedMap], () => {
     // Re-render chart
-    // We use nextTick (implicitly) or just rely on Vue reaction. 
-    // Chart rendering is sync, but ref updates are sync.
-    // However, canvas might need to be present.
-    // Since we are inside the component, updates are fine.
     requestAnimationFrame(renderChart);
-});
+}, { deep: true });
+
+const handleClickOutside = (event) => {
+    if (!event.target.closest('.group')) {
+        isDevDropdownOpen.value = false;
+    }
+};
 
 onMounted(() => {
     renderChart();
+    document.addEventListener('click', handleClickOutside);
 });
 
 onUnmounted(() => {
     if (chartInstance.value) {
         chartInstance.value.destroy();
     }
+    document.removeEventListener('click', handleClickOutside);
 });
 
 const legendProjects = computed(() => {
-    if (!selectedDev.value) return [];
+    if (selectedDevs.value.length === 0) return [];
     const projects = (selectedProj.value === 'all' ? devProjects.value : [selectedProj.value]);
     return projects
         .filter(p => projTotals.value[p] > 0)
@@ -179,7 +213,7 @@ const legendProjects = computed(() => {
     <div id="insights-section" class="flex flex-col p-0 overflow-hidden shrink-0 table-section mb-10">
         <div class="p-3 bg-slate-950 shrink-0 flex justify-between items-center">
             <h3 class="text-xs font-bold text-slate-100 flex items-center gap-2 px-5">
-                <i class="ph ph-chart-bar text-blue-400"></i> Developer Project Insights
+                <i class="ph ph-chart-bar text-blue-400"></i> Developer Insights
             </h3>
         </div>
 
@@ -188,19 +222,32 @@ const legendProjects = computed(() => {
                 <!-- Controls -->
                 <div class="flex flex-wrap gap-4 mb-6">
                     <div class="flex flex-col gap-1 w-full sm:w-64">
-                        <label class="text-xs text-slate-400 font-medium">Select Developer</label>
-                        <div class="relative">
-                            <select 
-                                v-model="selectedDev"
-                                @change="handleDevChange"
-                                class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500 appearance-none"
+                        <label class="text-xs text-slate-400 font-medium">Select Developers</label>
+                        <div class="relative group">
+                            <button 
+                                @click="isDevDropdownOpen = !isDevDropdownOpen"
+                                class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-lg p-2.5 text-left flex justify-between items-center hover:bg-slate-700 transition-colors"
                             >
-                                <option value="">Select a Developer...</option>
-                                <option v-for="dev in sortedDevs" :key="dev" :value="dev">
-                                    {{ dev }} ({{ devTotals[dev].toFixed(1) }} h)
-                                </option>
-                            </select>
-                            <i class="ph ph-caret-down absolute right-3 top-3 text-slate-400 pointer-events-none"></i>
+                                <span class="truncate">
+                                    <template v-if="selectedDevs.length === 0">Select Developers...</template>
+                                    <template v-else-if="selectedDevs.length === 1">{{ selectedDevs[0] }}</template>
+                                    <template v-else>{{ selectedDevs.length }} Developers selected</template>
+                                </span>
+                                <i class="ph ph-caret-down text-slate-400"></i>
+                            </button>
+                            
+                            <div v-if="isDevDropdownOpen" class="absolute top-full left-0 w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
+                                <div 
+                                    v-for="dev in sortedDevs" 
+                                    :key="dev"
+                                    @click="toggleDev(dev)"
+                                    class="p-2.5 hover:bg-slate-700 cursor-pointer flex items-center justify-between text-sm transition-colors border-b border-slate-700/50 last:border-0"
+                                    :class="{ 'bg-blue-600/20 text-blue-400': selectedDevs.includes(dev) }"
+                                >
+                                    <span class="truncate">{{ dev }} ({{ devTotals[dev].toFixed(1) }} h)</span>
+                                    <i v-if="selectedDevs.includes(dev)" class="ph ph-check-circle ph-fill"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -209,7 +256,7 @@ const legendProjects = computed(() => {
                         <div class="relative">
                             <select 
                                 v-model="selectedProj"
-                                :disabled="!selectedDev"
+                                :disabled="selectedDevs.length === 0"
                                 class="w-full bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500 appearance-none disabled:opacity-50"
                             >
                                 <option value="all">All Projects</option>
@@ -225,13 +272,13 @@ const legendProjects = computed(() => {
                 <!-- Chart Container -->
                 <div class="relative w-full h-96">
                     <canvas ref="chartRef"></canvas>
-                    <div v-if="!selectedDev" class="absolute inset-0 flex items-center justify-center text-slate-500 text-sm">
-                        Select a developer to view insights
+                    <div v-if="selectedDevs.length === 0" class="absolute inset-0 flex items-center justify-center text-slate-500 text-sm">
+                        Select one or more developers to view insights
                     </div>
                 </div>
 
                 <!-- Legend -->
-                <div v-if="selectedDev" class="chart-legend mt-4 flex flex-wrap gap-2 max-h-24 overflow-y-auto">
+                <div v-if="selectedDevs.length > 0" class="chart-legend mt-4 flex flex-wrap gap-2 max-h-24 overflow-y-auto">
                     <div 
                         v-for="(proj, index) in legendProjects" 
                         :key="proj"
