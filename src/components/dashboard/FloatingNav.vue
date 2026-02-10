@@ -96,9 +96,9 @@ const handleSync = async () => {
         
         <button v-if="supabaseConnected && activeSource === 'supabase' && !isSnapshot" @click="handleSync"
             :disabled="isSyncing"
-            class="nav-btn w-10 h-10 rounded-full border border-blue-500/50 shadow-lg bg-slate-800 text-blue-400 hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center relative group disabled:opacity-50 disabled:cursor-not-allowed">
+            class="nav-btn w-10 h-10 rounded-full border border-emerald-500/50 shadow-lg bg-slate-800 text-emerald-400 hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center relative group disabled:opacity-50 disabled:cursor-not-allowed">
             <i :class="['ph ph-arrows-clockwise text-lg', isSyncing ? 'animate-spin' : '']"></i>
-            <span class="absolute right-full mr-3 px-2 py-1 bg-slate-900 border border-slate-700 text-blue-400 text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl">{{ isSyncing ? 'Syncing...' : 'Sync Now' }}</span>
+            <span class="absolute right-full mr-3 px-2 py-1 bg-slate-900 border border-slate-700 text-emerald-400 text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl">{{ isSyncing ? 'Syncing...' : 'Sync Supabase Now' }}</span>
         </button>
 
         <button v-if="spacesConnected && !isSnapshot" @click="handleUpload"
