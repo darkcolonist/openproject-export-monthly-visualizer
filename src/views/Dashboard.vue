@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { 
     hasData, 
     filteredData, 
@@ -16,6 +17,7 @@ import {
     addUploadToHistory
 } from '@/store';
 import { uploadToSpaces } from '@/utils/spaces';
+import { toast } from '@/utils/toast';
 
 import ChartSection from '@/components/dashboard/ChartSection.vue';
 import ProjectSection from '@/components/dashboard/ProjectSection.vue';
@@ -23,6 +25,12 @@ import DeveloperSection from '@/components/dashboard/DeveloperSection.vue';
 import InsightsSection from '@/components/dashboard/InsightsSection.vue';
 import FloatingNav from '@/components/dashboard/FloatingNav.vue';
 import Footer from '@/components/common/Footer.vue';
+
+const route = useRoute();
+const isSnapshot = computed(() => {
+    const filename = route.params.filename;
+    return typeof filename === 'string' && filename.startsWith('spaces/');
+});
 
 // In Vue 3, we don't have the router imported yet, but App.vue handles view switching based on `hasData`.
 // We just need to ensure if data is lost, we emit back.
@@ -261,7 +269,7 @@ const isUploading = ref(false);
 
 const handleUploadToSpaces = async () => {
     if (!spacesConnected.value) {
-        alert('Please configure DigitalOcean Spaces in Settings first.');
+        toast.warning('Please configure DigitalOcean Spaces in Settings first.');
         return;
     }
 
@@ -291,7 +299,7 @@ const handleUploadToSpaces = async () => {
             shareUrl: uploadUrl.value
         });
     } catch (e) {
-        alert(e.message);
+        toast.error(e.message);
     } finally {
         isUploading.value = false;
     }
@@ -299,7 +307,7 @@ const handleUploadToSpaces = async () => {
 
 const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {
-        alert('URL copied to clipboard!');
+        toast.success('URL copied to clipboard!');
     });
 };
 </script>
@@ -314,7 +322,7 @@ const copyToClipboard = (text) => {
             <DeveloperSection />
             <InsightsSection />
             <Footer />
-            <FloatingNav :activeSection="activeSection" @upload="handleUploadToSpaces" />
+            <FloatingNav :activeSection="activeSection" :isSnapshot="isSnapshot" @upload="handleUploadToSpaces" />
 
             <!-- Upload Success Notification -->
             <div v-if="uploadUrl" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -344,13 +352,14 @@ const copyToClipboard = (text) => {
                         >
                             <i class="ph ph-arrow-square-out text-xl"></i>
                         </a>
-                        <button 
-                            @click="copyToClipboard(rawSpacesUrl)"
-                            class="p-2 hover:bg-slate-800 rounded-lg text-blue-400 transition-colors"
-                            title="Copy Direct Spaces Link (CSV)"
+                        <a 
+                            :href="rawSpacesUrl" 
+                            download
+                            class="p-2 hover:bg-slate-800 rounded-lg text-blue-400 transition-colors flex items-center justify-center shrink-0"
+                            title="Download CSV"
                         >
-                            <i class="ph ph-file-csv text-xl"></i>
-                        </button>
+                            <i class="ph ph-download-simple text-xl"></i>
+                        </a>
                         <button 
                             @click="uploadUrl = null; rawSpacesUrl = null"
                             class="p-2 hover:bg-slate-800 rounded-lg text-slate-500 hover:text-slate-300 transition-colors"

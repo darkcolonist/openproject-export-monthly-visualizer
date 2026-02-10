@@ -10,6 +10,7 @@ import {
     showHistoryModal
 } from '@/store';
 import { saveSpacesConfig, getSpacesConfig, clearSpacesConfig } from '@/utils/spaces';
+import { toast } from '@/utils/toast';
 
 const accessKey = ref('');
 const secretKey = ref('');
@@ -70,7 +71,7 @@ const formatDate = (isoString) => {
 
 const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {
-        // We could add a toast here, but simple alert for now if needed or just silent
+        toast.success('Value copied to clipboard!');
     });
 };
 </script>

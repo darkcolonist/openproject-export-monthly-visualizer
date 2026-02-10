@@ -7,6 +7,7 @@ import LoadingOverlay from '@/components/common/LoadingOverlay.vue';
 import SupabaseModal from '@/components/common/SupabaseModal.vue';
 import SpacesModal from '@/components/common/SpacesModal.vue';
 import HistoryModal from '@/components/common/HistoryModal.vue';
+import ToastContainer from '@/components/common/ToastContainer.vue';
 import { goToUpload } from '@/router';
 
 import { onMounted } from 'vue';
@@ -52,6 +53,7 @@ onMounted(() => {
         <SupabaseModal />
         <SpacesModal />
         <HistoryModal />
+        <ToastContainer />
 
         <!-- Header -->
         <Header @reset="handleReset" />

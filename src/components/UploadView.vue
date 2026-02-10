@@ -12,6 +12,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 import { goToDashboard } from '@/router';
+import { toast } from '@/utils/toast';
 
 // Remove emit
 // const emit = defineEmits(['file-loaded']);
@@ -36,7 +37,7 @@ const handleFile = async (file, fileBuffer = null) => {
         const data = await parseFile(file);
 
         if (data.length === 0) {
-            alert('No valid data found in the file. Please check the file format.');
+            toast.error('No valid data found in the file. Please check the file format.');
             return;
         }
 
@@ -56,7 +57,7 @@ const handleFile = async (file, fileBuffer = null) => {
 
     } catch (error) {
         console.error('File processing error:', error);
-        alert('Failed to process file: ' + error.message);
+        toast.error('Failed to process file: ' + error.message);
     }
 };
 
@@ -75,7 +76,7 @@ const handleLoadCached = async (filename) => {
                      // Navigate to dashboard
                      goToDashboard('supabase');
                  } else {
-                     alert('No valid data found in cached Supabase data.');
+                     toast.error('No valid data found in cached Supabase data.');
                      loadRecentFiles();
                  }
             } else {
@@ -84,12 +85,12 @@ const handleLoadCached = async (filename) => {
                 await handleFile(file, cached.data);
             }
         } else {
-            alert('Cached file has expired or is no longer available.');
+            toast.error('Cached file has expired or is no longer available.');
             loadRecentFiles();
         }
     } catch (error) {
         console.error('Error loading cached file:', error);
-        alert('Failed to load cached file: ' + error.message);
+        toast.error('Failed to load cached file: ' + error.message);
     }
 };
 

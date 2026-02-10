@@ -21,6 +21,7 @@ import {
 } from '@/store';
 import DateFilter from './DateFilter.vue';
 import { goToUpload } from '@/router';
+import { toast } from '@/utils/toast';
 import { getSupabaseConfig } from '@/utils/supabase';
 import { getSpacesConfig } from '@/utils/spaces';
 
@@ -96,13 +97,13 @@ const handleImport = (e) => {
                 setSpacesConfig(config.spaces);
             }
             
-            alert('Configuration imported successfully!');
+            toast.success('Configuration imported successfully!');
             toggleSettings();
             // Reset file input
             e.target.value = '';
         } catch (err) {
             console.error('Import error:', err);
-            alert('Failed to import configuration: Invalid JSON');
+            toast.error('Failed to import configuration: Invalid JSON');
         }
     };
     reader.readAsText(file);

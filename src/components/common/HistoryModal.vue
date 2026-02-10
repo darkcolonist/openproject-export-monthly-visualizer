@@ -170,15 +170,16 @@ const copyToClipboard = (text, id, type) => {
                                 <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-950 text-[10px] rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Share Link</span>
                             </button>
 
-                            <!-- Copy Direct URL -->
-                            <button 
-                                @click="copyToClipboard(item.directUrl, item.id, 'direct')"
+                            <!-- Download CSV -->
+                            <a 
+                                :href="item.directUrl"
+                                download
                                 class="p-2 bg-slate-800/50 hover:bg-emerald-600/20 hover:text-emerald-400 text-slate-400 rounded-lg transition-all relative group/btn"
-                                :title="copiedId === item.id && copiedType === 'direct' ? 'Copied!' : 'Copy Direct URL'"
+                                title="Download CSV"
                             >
-                                <i class="ph" :class="copiedId === item.id && copiedType === 'direct' ? 'ph-check' : 'ph-link'"></i>
-                                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-950 text-[10px] rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Direct URL</span>
-                            </button>
+                                <i class="ph ph-download-simple"></i>
+                                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-950 text-[10px] rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Download</span>
+                            </a>
 
                             <a 
                                 :href="item.shareUrl" 

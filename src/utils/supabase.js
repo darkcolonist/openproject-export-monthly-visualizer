@@ -95,6 +95,7 @@ export async function fetchSupabaseCount(url, key, startDate = null, endDate = n
  */
 function normalizeSupabaseData(data) {
     return data.map((row, index) => ({
+        ...row,
         id: index,
         date: extractMonth(row.date_spent),
         user: row.user || 'Unknown',
@@ -175,8 +176,9 @@ async function cacheSupabaseData(rawData) {
                 const transaction = db.transaction(['files'], 'readwrite');
                 const store = transaction.objectStore('files');
 
-                // Store in legacy format: Date, User, Units, Project
+                // Store all fields, including indicator
                 const legacyData = rawData.map(row => ({
+                    ...row,
                     Date: row.date_spent,
                     User: row.user,
                     Units: row.hours,

@@ -32,7 +32,7 @@ export async function listSpacesFiles(config, continuationToken = null) {
         const command = new ListObjectsV2Command({
             Bucket: config.bucket,
             Prefix: prefix,
-            MaxKeys: 20, // Fetch 20 at a time for pagination
+            MaxKeys: 5, // Fetch 5 at a time for pagination
             ContinuationToken: continuationToken,
         });
 
@@ -98,22 +98,56 @@ export async function uploadToSpaces(data, filename, config) {
         // Convert data to CSV if it's not already a string
         let content = '';
         if (Array.isArray(data) && data.length > 0) {
-            // Map internal keys to standard headers for better compatibility
-            // We want to use 'rawDate' as the primary 'Date' column to preserve the full day
-            const headerMap = {
+            // Dynamically determine headers from data
+            // We want to preserve all original columns, but prioritize our standard headers
+            const standardHeaders = {
                 rawDate: 'Date',
                 user: 'User',
                 units: 'Units',
                 project: 'Project'
             };
 
-            const keys = Object.keys(headerMap);
-            content = Object.values(headerMap).join(',') + '\n';
+            // Get all unique keys from the data (scan all rows)
+            // Using a more robust way to get keys from potential Proxy objects
+            const allKeysSet = new Set();
+            data.forEach(row => {
+                Object.keys(row).forEach(k => allKeysSet.add(k));
+            });
+            const allKeys = [...allKeysSet];
+
+            // Exclude internal/technical keys that are redundant
+            const excludedKeys = ['id', 'date'];
+
+            // Build the header list
+            // 1. Start with mapped standard headers
+            // 2. Add any other keys that aren't mapped or excluded
+            const finalHeaders = [];
+            const processedKeys = new Set();
+
+            Object.keys(standardHeaders).forEach(key => {
+                finalHeaders.push({ key, label: standardHeaders[key] });
+                processedKeys.add(key);
+            });
+
+            allKeys.forEach(key => {
+                if (!processedKeys.has(key) && !excludedKeys.includes(key)) {
+                    finalHeaders.push({ key, label: key });
+                    processedKeys.add(key);
+                }
+            });
+
+            console.log('[Spaces] Final headers for upload:', finalHeaders.map(h => h.label));
+
+            // Construction of CSV content
+            content = finalHeaders.map(h => {
+                const label = h.label;
+                return (label.includes(',') || label.includes('"')) ? `"${label.replace(/"/g, '""')}"` : label;
+            }).join(',') + '\n';
 
             // Rows
             content += data.map(row => {
-                return keys.map(key => {
-                    const value = row[key] === null || row[key] === undefined ? '' : String(row[key]);
+                return finalHeaders.map(h => {
+                    const value = row[h.key] === null || row[h.key] === undefined ? '' : String(row[h.key]);
                     // Escape commas and quotes
                     if (value.includes(',') || value.includes('"') || value.includes('\n')) {
                         return `"${value.replace(/"/g, '""')}"`;
@@ -126,7 +160,9 @@ export async function uploadToSpaces(data, filename, config) {
         }
 
         const prefix = config.path ? (config.path.endsWith('/') ? config.path : config.path + '/') : '';
-        const key = `${prefix}${Date.now()}-${filename.replace(/[^a-zA-Z0-9.-]/g, '_')}.csv`;
+        // Strip existing extensions if present to avoid file.csv.csv
+        const cleanFilename = filename.replace(/\.(csv|xls|xlsx)$/i, '').replace(/[^a-zA-Z0-9.-]/g, '_');
+        const key = `${prefix}${Date.now()}-${cleanFilename}.csv`;
 
         const command = new PutObjectCommand({
             Bucket: config.bucket,

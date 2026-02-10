@@ -21,6 +21,7 @@ import AirDatepicker from 'air-datepicker';
 import localeEn from 'air-datepicker/locale/en';
 import 'air-datepicker/air-datepicker.css';
 import { goToDashboard } from '@/router';
+import { toast } from '@/utils/toast';
 
 const url = ref('');
 const key = ref('');
@@ -185,7 +186,7 @@ const handleSave = async () => {
         goToDashboard('supabase');
     } catch (error) {
         console.error('Supabase sync error:', error);
-        alert('Failed to sync data: ' + error.message);
+        toast.error('Failed to sync data: ' + error.message);
     } finally {
         isSyncing.value = false;
     }
@@ -197,7 +198,7 @@ const handleSyncNow = async () => {
     try {
         await syncSupabase(url.value, key.value, localStart.value, localEnd.value);
     } catch (error) {
-        alert('Sync failed: ' + error.message);
+        toast.error('Sync failed: ' + error.message);
     } finally {
         isSyncing.value = false;
     }

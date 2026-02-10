@@ -2,7 +2,7 @@
 import { onMounted, onUnmounted } from 'vue';
 import { spacesConnected } from '@/store';
 
-const props = defineProps(['activeSection']);
+const props = defineProps(['activeSection', 'isSnapshot']);
 const emit = defineEmits(['scrollTo']);
 
 const scrollToSection = (sectionId) => {
@@ -55,7 +55,7 @@ const handleUpload = () => {
             <i class="ph ph-chart-bar"></i>
         </button>
 
-        <template v-if="spacesConnected">
+        <template v-if="spacesConnected && !isSnapshot">
             <div class="h-px bg-slate-800 my-1 mx-2"></div>
 
             <button @click="handleUpload"

@@ -147,6 +147,7 @@ export function normalizeSupabaseData(data) {
         }
 
         return {
+            ...row,
             id: index,
             date: month,
             user: String(user).trim(),
@@ -200,6 +201,7 @@ function normalizeData(data) {
         }
 
         return {
+            ...row,
             id: index,
             date: month,
             user: String(user).trim(),
