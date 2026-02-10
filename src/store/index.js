@@ -30,6 +30,7 @@ export const spacesConnected = ref(false);
 
 // ===== UI State =====
 export const chartVisible = ref(true);
+export const chartShrunk = ref(false);
 export const settingsMenuOpen = ref(false);
 export const supabaseModalOpen = ref(false);
 export const spacesModalOpen = ref(false);

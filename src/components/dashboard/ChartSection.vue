@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, computed, markRaw } from 'vue';
 import { Chart, registerables } from 'chart.js';
-import { filteredData, rawData } from '@/store';
+import { filteredData, rawData, chartShrunk } from '@/store';
 import { getMonths, getProjects } from '@/utils/parser';
 import { getColor } from '@/utils/colors';
 
@@ -159,7 +159,10 @@ const projectLegend = computed(() => {
 </script>
 
 <template>
-    <div ref="sectionRef" id="chart-section" class="bg-slate-900 border-b border-slate-800 flex flex-col p-3 shrink-0 shadow-lg relative z-30 transition-all">
+    <div ref="sectionRef" id="chart-section" 
+        :class="['bg-slate-900 border-b border-slate-800 flex flex-col p-3 shrink-0 shadow-lg relative z-30 transition-all duration-300 ease-in-out', 
+        chartShrunk ? 'pb-1' : '']"
+    >
         <div class="flex justify-between items-start mb-2 shrink-0 px-4">
             <div>
                 <h3 class="text-lg font-bold text-slate-100">Monthly Hours Trend</h3>
@@ -172,12 +175,14 @@ const projectLegend = computed(() => {
                 </button>
             </div>
         </div>
-        <div class="relative w-full h-80 transition-all overflow-hidden px-4">
+        <div class="relative w-full transition-all duration-300 ease-in-out overflow-hidden px-4"
+            :class="chartShrunk ? 'h-24' : 'h-80'"
+        >
             <canvas ref="chartRef"></canvas>
         </div>
         
         <!-- Chart Legend -->
-        <div class="chart-legend mb-2 flex flex-wrap gap-2 px-4 mt-2 max-h-24 overflow-y-auto">
+        <div v-if="!chartShrunk" class="chart-legend mb-2 flex flex-wrap gap-2 px-4 mt-2 max-h-24 overflow-y-auto anima-in fade-in duration-300">
             <div 
                 v-for="(proj, index) in projectLegend" 
                 :key="proj.name"

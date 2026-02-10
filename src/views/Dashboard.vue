@@ -11,7 +11,8 @@ import {
     spacesSecretKey,
     spacesEndpoint,
     spacesBucket,
-    spacesPath
+    spacesPath,
+    chartShrunk
 } from '@/store';
 import { uploadToSpaces } from '@/utils/spaces';
 
@@ -49,6 +50,9 @@ const handleScroll = () => {
         }
     }
     activeSection.value = current;
+    
+    // Shrink chart if scrolled down
+    chartShrunk.value = scrollTop > 20;
     
     updateFloatingHeader();
 };
