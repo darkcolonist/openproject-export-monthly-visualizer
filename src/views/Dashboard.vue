@@ -23,6 +23,7 @@ import ChartSection from '@/components/dashboard/ChartSection.vue';
 import ProjectSection from '@/components/dashboard/ProjectSection.vue';
 import DeveloperSection from '@/components/dashboard/DeveloperSection.vue';
 import InsightsSection from '@/components/dashboard/InsightsSection.vue';
+import ProjectInsightsSection from '@/components/dashboard/ProjectInsightsSection.vue';
 import FloatingNav from '@/components/dashboard/FloatingNav.vue';
 import Footer from '@/components/common/Footer.vue';
 
@@ -45,7 +46,7 @@ const handleScroll = () => {
     if (!scrollContent) return;
 
     const scrollTop = scrollContent.scrollTop;
-    const sections = ['chart-section', 'project-section', 'developer-section', 'insights-section'];
+    const sections = ['chart-section', 'project-section', 'developer-section', 'insights-section', 'project-insights-section'];
     let current = 'chart-section';
 
     for (const id of sections) {
@@ -321,6 +322,7 @@ const copyToClipboard = (text) => {
             <ProjectSection />
             <DeveloperSection />
             <InsightsSection />
+            <ProjectInsightsSection />
             <Footer />
             <FloatingNav :activeSection="activeSection" :isSnapshot="isSnapshot" @upload="handleUploadToSpaces" />
 

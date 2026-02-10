@@ -27,6 +27,11 @@ The **Open Project Report Visualizer** is a specialized, client-side web applica
   * *Instant Hour Totals:* Dropdown selectors display real-time total hour counts for both developers and projects.
   * *Smart Tooltip Filtering:* Monthly breakdown tooltips automatically hide zero-hour projects for the selected developer.
 
+* **Project Developer Insights:** The reciprocal of developer insights, focusing on project-centric analysis.
+  * *Contribution Breakdown:* Select a project to see which developers contributed and their monthly hour distribution.
+  * *Developer Filtering:* Isolate a specific developer's impact on a project's timeline.
+  * *Visual Alignment:* Uses a distinct color palette and icons for easy identification.
+
 * **Enhanced Table Navigation:**
   * *Floating Sticky Headers:* Active table headers stay visible while their table section is in view.
   * *Horizontal Scroll + Fixed First Column:* Project/Developer names stay visible during horizontal scrolling.
@@ -35,13 +40,19 @@ The **Open Project Report Visualizer** is a specialized, client-side web applica
 * **Intelligent File Handling:**
   * *URL Parameter Support:* Create bookmarkable URLs for quick access to specific reports.
   * *Automatic Caching:* Up to 5 most recent files cached in IndexedDB for 24 hours.
-  * *Recently Uploaded Files:* Visual list showing cached files with row counts and upload timestamps.
-  * *One-Click Reload:* Load any cached file instantly from the upload page.
+  * *Upload History:* A comprehensive history modal storing up to 50 recent uploads with filenames, direct CSV links, and shareable application URLs.
+  * *One-Click Reload:* Load any cached or historical file instantly.
+  * *Direct CSV Download:* Download processed reports directly from the success notification or history modal.
   * *Cache Management:* Clear all cached files with a single click and confirmation.
   * *File Validation:* Automatic detection of invalid file formats with clear error messages and a downloadable sample template.
-  * *Smart Cache Prevention:* Invalid files are rejected before caching to maintain data integrity.
+
+* **Configuration Management:**
+  * *Portability:* Export your Supabase and DigitalOcean Spaces configurations as a JSON file.
+  * *Instant Setup:* Import your settings file on new devices or browsers to skip manual configuration.
+  * *Secure Storage:* Credentials remain stored only in your local browser storage.
 
 * **Modern Dark Mode Interface:** A professional, high-contrast dark theme built with Tailwind CSS 4, optimized for readability and extended usage.
+  * *Dynamic Graph Resizing:* Charts automatically shrink when scrolling down to maximize vertical space for data tables.
 
 * **Smart Header Detection:** Algorithms automatically identify the correct data schema, bypassing metadata rows often found in exported reports.
 

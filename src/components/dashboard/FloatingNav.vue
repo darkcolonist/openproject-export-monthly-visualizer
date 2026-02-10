@@ -51,8 +51,13 @@ const handleUpload = () => {
         </button>
         <button @click="scrollToSection('insights-section')"
             :class="['nav-btn w-10 h-10 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center', activeSection === 'insights-section' ? 'active bg-blue-600 text-white' : 'bg-slate-800 text-blue-400']"
-            title="Insights">
+            title="Developer Insights">
             <i class="ph ph-chart-bar"></i>
+        </button>
+        <button @click="scrollToSection('project-insights-section')"
+            :class="['nav-btn w-10 h-10 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center', activeSection === 'project-insights-section' ? 'active bg-blue-600 text-white' : 'bg-slate-800 text-blue-400']"
+            title="Project Insights">
+            <i class="ph ph-projector-screen"></i>
         </button>
 
         <template v-if="spacesConnected && !isSnapshot">

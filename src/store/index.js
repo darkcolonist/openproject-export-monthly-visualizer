@@ -76,6 +76,22 @@ export const detailedMap = computed(() => {
     return map;
 });
 
+// Inverse Detailed map: { [Project]: { [Developer]: { [MonthKey]: hours } } }
+export const projectDetailedMap = computed(() => {
+    const map = {};
+    rawData.value.forEach(entry => {
+        const dev = entry.user;
+        const proj = entry.project;
+        const month = entry.date;
+
+        if (!map[proj]) map[proj] = {};
+        if (!map[proj][dev]) map[proj][dev] = {};
+        if (!map[proj][dev][month]) map[proj][dev][month] = 0;
+        map[proj][dev][month] += parseFloat(entry.units) || 0;
+    });
+    return map;
+});
+
 // ===== Actions =====
 export function setReportData(data, name) {
     rawData.value = data;
