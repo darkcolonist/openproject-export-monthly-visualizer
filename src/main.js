@@ -5,6 +5,7 @@ import router from './router'
 import "@phosphor-icons/web/regular";
 import "@phosphor-icons/web/fill";
 import "@phosphor-icons/web/bold";
+import { setUploadHistory } from './store';
 
 const app = createApp(App)
 app.use(router)

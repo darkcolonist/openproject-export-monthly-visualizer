@@ -12,7 +12,8 @@ import {
     spacesEndpoint,
     spacesBucket,
     spacesPath,
-    chartShrunk
+    chartShrunk,
+    addUploadToHistory
 } from '@/store';
 import { uploadToSpaces } from '@/utils/spaces';
 
@@ -280,6 +281,15 @@ const handleUploadToSpaces = async () => {
         const baseUrl = window.location.origin + window.location.pathname;
         const hashBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
         uploadUrl.value = `${hashBase}#/dashboard/spaces/${encodeURIComponent(url)}`;
+        
+        // Add to history
+        addUploadToHistory({
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            filename: fileName.value || 'export',
+            directUrl: url,
+            shareUrl: uploadUrl.value
+        });
     } catch (e) {
         alert(e.message);
     } finally {

@@ -2,6 +2,14 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { parseFile, normalizeSupabaseData } from '../utils/parser';
 import { cacheFile, getAllCachedFiles, loadCachedFile, clearCache, getTimeAgo } from '../utils/storage';
+import dayjs from 'dayjs';
+import localizedFormat from 'dayjs/plugin/localizedFormat';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(localizedFormat);
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 import { goToDashboard } from '@/router';
 
@@ -200,7 +208,7 @@ const triggerFileInput = () => {
                                     {{ file.isSupabase ? 'Supabase Live Connection' : file.name }}
                                 </div>
                                 <div class="text-xs text-slate-500 mt-0.5">
-                                    {{ file.rowCount ? `${file.rowCount} rows` : 'Unknown rows' }} • {{ getTimeAgo(file.timestamp) }}
+                                    {{ file.rowCount ? `${file.rowCount} rows` : 'Unknown rows' }} • <span :title="dayjs(file.timestamp).format('LLLL (Z)')" class="cursor-help">{{ getTimeAgo(file.timestamp) }}</span>
                                 </div>
                             </div>
                         </div>

@@ -4,10 +4,10 @@ import {
     spacesModalOpen, 
     hideSpacesModal, 
     setSpacesConfig,
-    spacesAccessKey,
-    spacesSecretKey,
+    spacesConnected,
     spacesEndpoint,
-    spacesBucket
+    spacesPath,
+    showHistoryModal
 } from '@/store';
 import { saveSpacesConfig, getSpacesConfig, clearSpacesConfig } from '@/utils/spaces';
 
@@ -16,6 +16,11 @@ const secretKey = ref('');
 const endpoint = ref('https://nyc3.digitaloceanspaces.com');
 const bucket = ref('');
 const path = ref('');
+
+const handleOpenHistory = () => {
+    hideSpacesModal();
+    setTimeout(showHistoryModal, 100);
+};
 
 onMounted(() => {
     const config = getSpacesConfig();
@@ -52,6 +57,22 @@ const handleClear = () => {
         setSpacesConfig({ accessKey: '', secretKey: '', endpoint: '', bucket: '', path: '' });
     }
 };
+
+const formatDate = (isoString) => {
+    const date = new Date(isoString);
+    return date.toLocaleString(undefined, { 
+        month: 'short', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+};
+
+const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+        // We could add a toast here, but simple alert for now if needed or just silent
+    });
+};
 </script>
 
 <template>
@@ -60,8 +81,8 @@ const handleClear = () => {
         <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" @click="hideSpacesModal"></div>
         
         <!-- Modal -->
-        <div class="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-            <div class="p-6">
+        <div class="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-300">
+            <div class="p-6 overflow-y-auto custom-scrollbar">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-xl font-bold text-slate-100 flex items-center gap-2">
                         <i class="ph ph-cloud-arrow-up text-blue-400"></i>
@@ -123,13 +144,12 @@ const handleClear = () => {
                         />
                     </div>
                 </div>
-
                 <div class="flex gap-3 mt-8">
                     <button 
                         @click="handleClear"
                         class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-3 px-4 rounded-xl transition-all border border-slate-700 hover:border-slate-600"
                     >
-                        Clear
+                        Clear Config
                     </button>
                     <button 
                         @click="handleSave"
@@ -139,9 +159,30 @@ const handleClear = () => {
                         Save Config
                     </button>
                 </div>
+
+                <div class="mt-8 pt-6 border-t border-slate-800">
+                    <button 
+                        @click="handleOpenHistory"
+                        class="w-full bg-slate-950/50 border border-slate-800 hover:border-blue-500/50 hover:bg-blue-500/5 rounded-xl p-4 transition-all flex items-center justify-between group"
+                    >
+                        <div class="flex items-center gap-3 text-left">
+                            <div class="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+                                <i class="ph ph-clock-counter-clockwise text-blue-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-200">Browse Upload History</p>
+                                <p class="text-[10px] text-slate-500">View and share past uploads</p>
+                            </div>
+                        </div>
+                        <i class="ph ph-caret-right text-slate-600 group-hover:text-blue-400 group-hover:translate-x-1 transition-all"></i>
+                    </button>
+                    <p v-if="!spacesConnected" class="text-[9px] text-amber-500/70 mt-2 text-center italic">
+                        Note: Full configuration is required to fetch history.
+                    </p>
+                </div>
                 
-                <p class="text-[10px] text-slate-500 mt-4 text-center px-4">
-                    Credentials are stored locally in your browser cache and are only used to upload exported files.
+                <p class="text-[10px] text-slate-500 mt-6 text-center px-4">
+                    Configuration is stored locally, while file history is fetched from DigitalOcean.
                 </p>
             </div>
         </div>

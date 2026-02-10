@@ -213,18 +213,14 @@ export async function clearCache() {
     }
 }
 
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+dayjs.extend(relativeTime);
+
 /**
- * Get time ago string for display
+ * Get time ago string for display using dayjs
  */
 export function getTimeAgo(timestamp) {
-    const now = Date.now();
-    const diff = now - timestamp;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (minutes < 1) return 'just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    return `${days}d ago`;
+    return dayjs(timestamp).fromNow();
 }

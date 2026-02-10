@@ -27,6 +27,7 @@ export const spacesEndpoint = ref(null);
 export const spacesBucket = ref(null);
 export const spacesPath = ref(null);
 export const spacesConnected = ref(false);
+export const uploadHistory = ref([]);
 
 // ===== UI State =====
 export const chartVisible = ref(true);
@@ -34,6 +35,7 @@ export const chartShrunk = ref(false);
 export const settingsMenuOpen = ref(false);
 export const supabaseModalOpen = ref(false);
 export const spacesModalOpen = ref(false);
+export const historyModalOpen = ref(false);
 
 // ===== Derived State (Computed) =====
 export const filteredData = computed(() => {
@@ -113,6 +115,18 @@ export function setSpacesConfig(config) {
     spacesConnected.value = !!(config.accessKey && config.secretKey && config.endpoint && config.bucket);
 }
 
+export function setUploadHistory(history) {
+    uploadHistory.value = history;
+}
+
+export function addUploadToHistory(upload) {
+    uploadHistory.value = [upload, ...uploadHistory.value].slice(0, 50);
+}
+
+export function clearUploadHistory() {
+    uploadHistory.value = [];
+}
+
 export function toggleSettings() {
     settingsMenuOpen.value = !settingsMenuOpen.value;
 }
@@ -131,6 +145,14 @@ export function showSpacesModal() {
 
 export function hideSpacesModal() {
     spacesModalOpen.value = false;
+}
+
+export function showHistoryModal() {
+    historyModalOpen.value = true;
+}
+
+export function hideHistoryModal() {
+    historyModalOpen.value = false;
 }
 
 export function toggleChart() {

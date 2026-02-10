@@ -6,6 +6,7 @@ import Header from '@/components/common/Header.vue';
 import LoadingOverlay from '@/components/common/LoadingOverlay.vue';
 import SupabaseModal from '@/components/common/SupabaseModal.vue';
 import SpacesModal from '@/components/common/SpacesModal.vue';
+import HistoryModal from '@/components/common/HistoryModal.vue';
 import { goToUpload } from '@/router';
 
 import { onMounted } from 'vue';
@@ -50,6 +51,7 @@ onMounted(() => {
         <LoadingOverlay v-if="isLoading" :text="loadingText" />
         <SupabaseModal />
         <SpacesModal />
+        <HistoryModal />
 
         <!-- Header -->
         <Header @reset="handleReset" />
