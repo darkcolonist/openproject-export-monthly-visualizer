@@ -58,12 +58,14 @@ const handleSync = async () => {
 </script>
 
 <template>
-    <div class="fixed bottom-20 right-6 flex flex-col gap-2 z-50">
+    <div class="fixed bottom-20 right-0 flex flex-col gap-2 z-50 transition-all duration-500 ease-in-out translate-x-5 hover:-translate-x-6 group/nav-container pl-10">
+
         <button @click="scrollToSection('chart-section')"
             :class="['nav-btn w-10 h-10 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center relative group', activeSection === 'chart-section' ? 'active bg-blue-600 text-white' : 'bg-slate-800 text-blue-400']">
             <i class="ph ph-arrow-up"></i>
             <span class="absolute right-full mr-3 px-2 py-1 bg-slate-900 border border-slate-700 text-blue-400 text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl">Top</span>
         </button>
+
         <button @click="scrollToSection('project-section')"
             :class="['nav-btn w-10 h-10 rounded-full border border-slate-700 shadow-lg hover:bg-slate-700 hover:scale-110 transition-all flex items-center justify-center relative group', activeSection === 'project-section' ? 'active bg-blue-600 text-white' : 'bg-slate-800 text-blue-400']">
             <i class="ph ph-briefcase"></i>
