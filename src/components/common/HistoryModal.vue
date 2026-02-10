@@ -28,6 +28,9 @@ const nextToken = ref(null);
 const listEnd = ref(false);
 const scrollContainer = ref(null);
 
+const allFiles = ref([]);
+const pageSize = 5;
+
 const fetchMore = async (reset = false) => {
     if (isFetching.value || (listEnd.value && !reset)) return;
     
@@ -36,25 +39,31 @@ const fetchMore = async (reset = false) => {
         error.value = null;
         
         if (reset) {
+            allFiles.value = [];
             files.value = [];
-            nextToken.value = null;
             listEnd.value = false;
+
+            const config = {
+                accessKey: spacesAccessKey.value,
+                secretKey: spacesSecretKey.value,
+                endpoint: spacesEndpoint.value,
+                bucket: spacesBucket.value,
+                path: spacesPath.value
+            };
+
+            // Fetch everything once so we can sort globally
+            const result = await listSpacesFiles(config);
+            allFiles.value = result.files;
         }
 
-        const config = {
-            accessKey: spacesAccessKey.value,
-            secretKey: spacesSecretKey.value,
-            endpoint: spacesEndpoint.value,
-            bucket: spacesBucket.value,
-            path: spacesPath.value
-        };
-
-        const result = await listSpacesFiles(config, nextToken.value);
+        // Paginate locally
+        const start = files.value.length;
+        const end = start + pageSize;
+        const nextBatch = allFiles.value.slice(start, end);
         
-        files.value = [...files.value, ...result.files];
-        nextToken.value = result.nextContinuationToken;
+        files.value = [...files.value, ...nextBatch];
         
-        if (!result.nextContinuationToken) {
+        if (files.value.length >= allFiles.value.length) {
             listEnd.value = true;
         }
     } catch (e) {
@@ -140,57 +149,64 @@ const copyToClipboard = (text, id, type) => {
                 </div>
 
                 <div v-if="files.length > 0" class="flex flex-col gap-2">
-                    <div v-for="item in files" :key="item.id" 
-                        class="group bg-slate-950/40 border border-slate-800/40 rounded-xl p-3 hover:border-blue-500/30 hover:bg-slate-950/60 transition-all flex items-center justify-between gap-3 min-w-0"
+                    <TransitionGroup 
+                        name="list" 
+                        tag="div" 
+                        class="flex flex-col gap-2"
                     >
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-center gap-2 mb-0.5">
-                                <i class="ph ph-file-csv text-blue-400 text-sm"></i>
-                                <p class="text-[13px] font-bold text-slate-200 truncate" :title="item.filename">{{ item.filename }}</p>
+                        <div v-for="(item, index) in files" :key="item.id" 
+                            class="group bg-slate-950/40 border border-slate-800/40 rounded-xl p-3 hover:border-blue-500/30 hover:bg-slate-950/60 transition-all flex items-center justify-between gap-3 min-w-0"
+                            :style="{ '--delay': (index % pageSize) * 0.05 + 's' }"
+                        >
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2 mb-0.5">
+                                    <i class="ph ph-file-csv text-blue-400 text-sm"></i>
+                                    <p class="text-[13px] font-bold text-slate-200 truncate" :title="item.filename">{{ item.filename }}</p>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span 
+                                        class="text-[10px] text-slate-500 flex items-center gap-1 cursor-help"
+                                        :title="dayjs(item.timestamp).format('LLLL (Z)')"
+                                    >
+                                        <i class="ph ph-calendar"></i>
+                                        {{ formatDate(item.timestamp) }}
+                                    </span>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-3">
-                                <span 
-                                    class="text-[10px] text-slate-500 flex items-center gap-1 cursor-help"
-                                    :title="dayjs(item.timestamp).format('LLLL (Z)')"
+                            
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <!-- Copy Shareable Link -->
+                                <button 
+                                    @click="copyToClipboard(item.shareUrl, item.id, 'share')"
+                                    class="p-2 bg-slate-800/50 hover:bg-blue-600/20 hover:text-blue-400 text-slate-400 rounded-lg transition-all relative group/btn"
+                                    :title="copiedId === item.id && copiedType === 'share' ? 'Copied!' : 'Copy Shareable Link'"
                                 >
-                                    <i class="ph ph-calendar"></i>
-                                    {{ formatDate(item.timestamp) }}
-                                </span>
+                                    <i class="ph" :class="copiedId === item.id && copiedType === 'share' ? 'ph-check' : 'ph-share-network'"></i>
+                                    <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-950 text-[10px] rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Share Link</span>
+                                </button>
+    
+                                <!-- Download CSV -->
+                                <a 
+                                    :href="item.directUrl"
+                                    download
+                                    class="p-2 bg-slate-800/50 hover:bg-emerald-600/20 hover:text-emerald-400 text-slate-400 rounded-lg transition-all relative group/btn"
+                                    title="Download CSV"
+                                >
+                                    <i class="ph ph-download-simple"></i>
+                                    <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-950 text-[10px] rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Download</span>
+                                </a>
+    
+                                <a 
+                                    :href="item.shareUrl" 
+                                    target="_blank"
+                                    class="p-2 bg-slate-800/50 hover:bg-blue-600/30 hover:text-blue-300 text-slate-400 rounded-lg transition-all relative group/btn"
+                                >
+                                    <i class="ph ph-arrow-square-out"></i>
+                                    <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-950 text-[10px] rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Open Report</span>
+                                </a>
                             </div>
                         </div>
-                        
-                        <div class="flex items-center gap-1.5 shrink-0">
-                            <!-- Copy Shareable Link -->
-                            <button 
-                                @click="copyToClipboard(item.shareUrl, item.id, 'share')"
-                                class="p-2 bg-slate-800/50 hover:bg-blue-600/20 hover:text-blue-400 text-slate-400 rounded-lg transition-all relative group/btn"
-                                :title="copiedId === item.id && copiedType === 'share' ? 'Copied!' : 'Copy Shareable Link'"
-                            >
-                                <i class="ph" :class="copiedId === item.id && copiedType === 'share' ? 'ph-check' : 'ph-share-network'"></i>
-                                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-950 text-[10px] rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Share Link</span>
-                            </button>
-
-                            <!-- Download CSV -->
-                            <a 
-                                :href="item.directUrl"
-                                download
-                                class="p-2 bg-slate-800/50 hover:bg-emerald-600/20 hover:text-emerald-400 text-slate-400 rounded-lg transition-all relative group/btn"
-                                title="Download CSV"
-                            >
-                                <i class="ph ph-download-simple"></i>
-                                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-950 text-[10px] rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Download</span>
-                            </a>
-
-                            <a 
-                                :href="item.shareUrl" 
-                                target="_blank"
-                                class="p-2 bg-slate-800/50 hover:bg-blue-600/30 hover:text-blue-300 text-slate-400 rounded-lg transition-all"
-                                title="Open Report"
-                            >
-                                <i class="ph ph-arrow-square-out"></i>
-                            </a>
-                        </div>
-                    </div>
+                    </TransitionGroup>
                 </div>
 
                 <!-- Pagination / Loading States -->
@@ -244,5 +260,24 @@ const copyToClipboard = (text, id, type) => {
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #334155;
+}
+
+/* List Transitions */
+.list-enter-active {
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition-delay: var(--delay);
+}
+.list-enter-from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+}
+.list-enter-to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Ensure moving items also animate */
+.list-move {
+    transition: transform 0.4s ease;
 }
 </style>

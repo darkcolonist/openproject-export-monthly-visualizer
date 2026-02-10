@@ -8,7 +8,7 @@ import { setLoading } from '../store/index.js';
 /**
  * List files from DigitalOcean Spaces
  */
-export async function listSpacesFiles(config, continuationToken = null) {
+export async function listSpacesFiles(config) {
     if (!config || !config.accessKey || !config.secretKey || !config.endpoint || !config.bucket) {
         throw new Error('DigitalOcean Spaces configuration is incomplete');
     }
@@ -29,17 +29,29 @@ export async function listSpacesFiles(config, continuationToken = null) {
 
         const prefix = config.path ? (config.path.endsWith('/') ? config.path : config.path + '/') : '';
 
-        const command = new ListObjectsV2Command({
-            Bucket: config.bucket,
-            Prefix: prefix,
-            MaxKeys: 5, // Fetch 5 at a time for pagination
-            ContinuationToken: continuationToken,
-        });
+        let allContents = [];
+        let continuationToken = null;
+        let isTruncated = true;
 
-        const response = await client.send(command);
+        // Fetch all objects in the directory to allow global sorting
+        while (isTruncated) {
+            const command = new ListObjectsV2Command({
+                Bucket: config.bucket,
+                Prefix: prefix,
+                ContinuationToken: continuationToken,
+            });
 
-        const files = response.Contents ? response.Contents
-            .sort((a, b) => b.LastModified - a.LastModified)
+            const response = await client.send(command);
+            if (response.Contents) {
+                allContents = [...allContents, ...response.Contents];
+            }
+
+            continuationToken = response.NextContinuationToken;
+            isTruncated = response.IsTruncated;
+        }
+
+        const files = allContents
+            .sort((a, b) => b.LastModified - a.LastModified) // Global sort: Newest First
             .map(item => {
                 // Construct URLs
                 const directUrl = `${config.endpoint.replace('https://', `https://${config.bucket}.`)}/${item.Key}`;
@@ -58,11 +70,11 @@ export async function listSpacesFiles(config, continuationToken = null) {
                     directUrl: directUrl,
                     shareUrl: shareUrl
                 };
-            }) : [];
+            });
 
         return {
             files,
-            nextContinuationToken: response.NextContinuationToken
+            nextContinuationToken: null // We returned everything
         };
     } catch (error) {
         console.error('Spaces list error:', error);
