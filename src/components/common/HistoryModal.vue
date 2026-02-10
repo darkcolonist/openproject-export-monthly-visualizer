@@ -127,10 +127,10 @@ const copyToClipboard = (text, id, type) => {
                     <button 
                         @click="fetchMore(true)" 
                         :disabled="isFetching"
-                        class="w-10 h-10 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-blue-400 rounded-xl transition-all disabled:opacity-50"
-                        title="Refresh History"
+                        class="w-10 h-10 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-blue-400 rounded-xl transition-all disabled:opacity-50 relative group"
                     >
                         <i class="ph ph-arrows-clockwise text-lg" :class="{ 'animate-spin': isFetching }"></i>
+                        <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-950 border border-slate-800 text-blue-400 text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl">Refresh History</span>
                     </button>
                     <button @click="hideHistoryModal" class="w-10 h-10 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-100 rounded-xl transition-all">
                         <i class="ph ph-x text-xl"></i>

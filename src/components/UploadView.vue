@@ -186,10 +186,10 @@ const triggerFileInput = () => {
                     </h3>
                     <button 
                         @click="handleClearCache"
-                        class="text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"
-                        title="Clear cache"
+                        class="text-red-400 hover:text-red-300 transition-colors flex items-center gap-1 relative group"
                     >
                         <i class="ph ph-trash text-sm"></i>
+                        <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-950 border border-slate-700 text-red-400 text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl z-50">Clear cache</span>
                     </button>
                 </div>
                 <div class="space-y-2">
@@ -230,9 +230,10 @@ const triggerFileInput = () => {
             <div class="mt-12 text-center pb-6">
                 <a href="https://github.com/darkcolonist/openproject-export-monthly-visualizer" target="_blank"
                     rel="noopener noreferrer"
-                    class="inline-flex items-center gap-2 text-xs text-slate-500 hover:text-blue-400 transition-colors">
+                    class="inline-flex items-center gap-2 text-xs text-slate-500 hover:text-blue-400 transition-colors relative group">
                     <i class="ph ph-github-logo text-base"></i>
                     <span>Open Source on GitHub</span>
+                    <span class="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-slate-900 border border-slate-700 text-blue-400 text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl z-50">View on GitHub</span>
                 </a>
             </div>
         </div>

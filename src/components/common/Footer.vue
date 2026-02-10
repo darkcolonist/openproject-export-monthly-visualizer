@@ -21,17 +21,18 @@ const handleCopyUrl = () => {
 
             <div class="flex items-center gap-4">
                 <button @click="handleCopyUrl"
-                    class="text-xs text-slate-400 hover:text-blue-400 flex items-center gap-1 transition-colors"
-                    title="Copy URL from address bar">
+                    class="text-xs text-slate-400 hover:text-blue-400 flex items-center gap-1 transition-colors relative group">
                     <i class="ph ph-link"></i> Copy URL
+                    <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-950 border border-slate-700 text-blue-400 text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl z-50">Copy app URL to clipboard</span>
                 </button>
 
                 <div class="w-px h-3 bg-slate-700 mx-1"></div>
 
                 <a href="https://github.com/darkcolonist/openproject-export-monthly-visualizer" target="_blank"
                     rel="noopener noreferrer"
-                    class="text-xs text-slate-400 hover:text-blue-400 flex items-center gap-1 transition-colors">
+                    class="text-xs text-slate-400 hover:text-blue-400 flex items-center gap-1 transition-colors relative group">
                     <i class="ph ph-github-logo"></i> GitHub
+                    <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-950 border border-slate-700 text-blue-400 text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl z-50">View Source Code</span>
                 </a>
             </div>
         </div>

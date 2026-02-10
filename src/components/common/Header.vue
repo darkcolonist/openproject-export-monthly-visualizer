@@ -145,10 +145,9 @@ onUnmounted(() => {
                 <button 
                     @click="dateFilterOpen = !dateFilterOpen"
                     :class="[
-                        'flex items-center gap-2 px-3 md:px-4 h-[38px] bg-slate-800 border border-slate-700 rounded-l-xl hover:bg-slate-700 transition-all z-10 relative focus:z-20 hover:text-blue-400',
+                        'flex items-center gap-2 px-3 md:px-4 h-[38px] bg-slate-800 border border-slate-700 rounded-l-xl hover:bg-slate-700 transition-all z-10 relative focus:z-20 hover:text-blue-400 group',
                         dateFilterOpen ? 'text-blue-400 bg-slate-700' : 'text-slate-300'
                     ]"
-                    title="Date Range"
                 >
                     <i class="ph ph-calendar text-lg"></i>
                     <div class="hidden md:flex flex-col items-start leading-none gap-0.5">
@@ -156,6 +155,7 @@ onUnmounted(() => {
                          <span class="text-[9px] uppercase font-bold text-slate-500 group-hover:text-blue-400/70 transition-colors">Range</span>
                          <span class="text-[10px] font-medium">{{ formatDateRange }}</span>
                     </div>
+                    <span class="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-slate-900 border border-slate-700 text-blue-400 text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl z-50">Date Range</span>
                 </button>
                 <DateFilter v-if="dateFilterOpen" @close="handleCloseDateFilter" class="!left-auto !right-0 origin-top-right" />
             </div>
@@ -165,24 +165,25 @@ onUnmounted(() => {
                 v-if="hasData"
                 @click="toggleChart"
                 :class="[
-                    'flex items-center gap-2 px-3 md:px-4 h-[38px] bg-slate-800 border border-slate-700 hover:bg-slate-700 transition-all z-0 relative focus:z-20 border-l-0',
+                    'flex items-center gap-2 px-3 md:px-4 h-[38px] bg-slate-800 border border-slate-700 hover:bg-slate-700 transition-all z-0 relative focus:z-20 border-l-0 group',
                     chartVisible ? 'text-blue-400' : 'text-slate-400'
                 ]"
-                :title="chartVisible ? 'Hide Graph' : 'Show Graph'"
             >
                 <i :class="['ph text-lg', chartVisible ? 'ph-eye' : 'ph-eye-slash']"></i>
                 <span class="hidden md:inline text-xs font-medium">{{ chartVisible ? 'Hide' : 'Show' }} Graph</span>
+                <span class="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-slate-900 border border-slate-700 text-blue-400 text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl z-50">{{ chartVisible ? 'Hide Graph' : 'Show Graph' }}</span>
             </button>
 
             <!-- 3. New File -->
             <button 
                 @click="handleNewFile"
-                class="flex items-center gap-2 px-3 md:px-4 h-[38px] bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 text-xs font-bold transition-all border border-slate-700 border-l-0 relative focus:z-20"
+                class="flex items-center gap-2 px-3 md:px-4 h-[38px] bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 text-xs font-bold transition-all border border-slate-700 border-l-0 relative focus:z-20 group"
                 :class="{'rounded-l-xl': !hasData}" 
             >
                 <!-- If no data, this becomes the first item, so round left -->
                 <i class="ph ph-file-plus text-lg"></i>
                 <span class="hidden md:inline">New File</span>
+                <span class="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-slate-900 border border-slate-700 text-blue-400 text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl z-50">Upload New File</span>
             </button>
 
             <!-- 4. Settings Menu -->
@@ -191,12 +192,12 @@ onUnmounted(() => {
                     ref="settingsBtnRef"
                     @click="handleMenuToggle"
                     :class="[
-                        'flex items-center justify-center px-3 h-[38px] bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 text-xs font-bold rounded-r-xl transition-all border border-slate-700 border-l-0 relative focus:z-20',
+                        'flex items-center justify-center px-3 h-[38px] bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-blue-400 text-xs font-bold rounded-r-xl transition-all border border-slate-700 border-l-0 relative focus:z-20 group',
                         settingsMenuOpen ? 'bg-slate-700 text-blue-400' : ''
                     ]"
-                    title="Configuration"
                 >
                     <i class="ph ph-dots-three text-xl"></i>
+                    <span class="absolute top-full right-0 mt-2 px-2 py-1 bg-slate-900 border border-slate-700 text-blue-400 text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl z-50">Configuration</span>
                 </button>
                 
                 <div ref="settingsMenuRef" v-if="settingsMenuOpen" class="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50">
