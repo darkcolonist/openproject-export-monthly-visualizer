@@ -32,6 +32,12 @@ The **Open Project Report Visualizer** is a specialized, client-side web applica
   * *Developer Filtering:* Isolate a specific developer's impact on the selected projects' timeline.
   * *Visual Alignment:* Uses a distinct color palette and icons for easy identification.
 
+* **Raw Data Explorer:** A powerful data table section for viewing the underlying report data.
+  * *Paginated View:* Navigation across all records with configurable page sizes (10/20/50).
+  * *Universal Search:* Real-time filtering across all data fields to find specific entries instantly.
+  * *Interactive Headers:* Click any column header to sort the data in ascending or descending order.
+  * *Dynamic Schema:* Automatically includes all custom columns and metadata from the source file beyond the core fields.
+
 * **Enhanced Table Navigation:**
   * *Floating Sticky Headers:* Active table headers stay visible while their table section is in view.
   * *Horizontal Scroll + Fixed First Column:* Project/Developer names stay visible during horizontal scrolling.
